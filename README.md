@@ -1,8 +1,7 @@
 # Choj
 
 ## Overview
-Choj is a web application designed for automated code grading and testing, similar to platforms like LeetCode. Built using a modern frontend stack, the app provides a streamlined interface for coding problems, submissions, and performance tracking.
-Currently, two official plugins are available:
+Choj is a website designed for learning programming through interactive coding problems and automated code grading. It provides a hands-on platform for students to practice coding skills, receive instant feedback, and track their progress over time.
 
 ## Getting Started
 1. Clone the repository
