@@ -1,0 +1,92 @@
+.app-header {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.app-header .header-left {
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.header-left input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    /*margin-left: 20px;*/
+    color: #323232;
+    border-radius: 1rem;
+    padding: 5px 10px;
+    font-weight: 600;
+}
+
+.header-left svg {
+    fill: #0d6efd;
+    font-size: 18px;
+}
+
+.app-header .header-right {
+    width: 50%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.app-header .header-right .header-right-item button {
+    font-size: 20px;
+    height: calc(26px + 1.25rem);
+    padding: .625rem;
+    width: calc(26px + 1.25rem);
+    background: transparent;
+    outline: none;
+    border: none;
+    margin-right: 15px;
+    cursor: pointer;
+    color: rgba(50, 50, 50, .75);
+}
+
+.app-header .header-right .header-right-item button:hover {
+    background-color: #e7eef8;
+    border-radius: 50%;
+    color: #323232;
+}
+
+.app-header .header-right .user {
+    display: flex;
+    align-items: center;
+}
+
+.app-header .header-right .user .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff3d4;
+}
+
+.app-header .header-right .user .user-info {
+    line-height: 24px;
+    margin-right: 20px;
+    text-align: right;
+}
+
+.app-header .header-right .user .user-info div:first-child {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.app-header .header-right .user .user-info small {
+    font-size: .875em;
+    color: rgba(50, 50, 50, .75);
+}
