@@ -1,50 +1,55 @@
-# React + TypeScript + Vite
+# Choj
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
+## Overview
+Choj is a web application designed for automated code grading and testing, similar to platforms like LeetCode. Built using a modern frontend stack, the app provides a streamlined interface for coding problems, submissions, and performance tracking.
 Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Getting Started
+1. Clone the repository
+```bash
+git clone https://github.com/bmchien1/choj.git
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+2. Install dependencies
+```bash
+cd choj
+npm install
 ```
+
+3. Start the development server
+```bash
+npm run dev
+```
+
+4. Open your browser and navigate to `http://localhost:3000`
+
+### Tech Stack:
+- [React](https://react.dev/)
+- [Vite](https://vitejs.dev/)
+- [Antd](https://ant.design/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [React Query](https://react-query.tanstack.com/)
+- [React Router](https://reactrouter.com/)
+- [Axios](https://axios-http.com/)
+- [Zustand](https://zustand.surge.sh/)
+
+## Template Structure:
+- `src`: Contains the source code of the frontend
+    - `apis`: Contains the API services and configurations
+    - `components`: Contains the reusable components
+    - `constants`: Contains the constant values and types
+    - `hooks`: Contains the custom hooks
+    - `layouts`: Contains the layout components
+    - `pages`: Contains the page components. Each page is a route in the application
+    - `providers`: Contains some providers such as ThemeProvider, QueryClientProvider, etc.
+    - `routes`: Contains the route configurations
+    - `themes`: Contains the theme configurations
+    - `utils`: Contains the utility functions
+    - `App.tsx`: The root component of the application
+    - `index.tsx`: The entry point of the application
+- `.env`: Contains the environment variables
+```
+
+## NOTE:
+
+- The variables in the `.env` file should be prefixed with `VITE_` to be accessible in the application.
