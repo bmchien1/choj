@@ -3,12 +3,12 @@ import {Table, Tag, Select, Input, Space} from 'antd';
 import {useNavigate} from 'react-router-dom';
 import { SearchOutlined } from '@ant-design/icons';
 import {useQuery} from "@tanstack/react-query";
-import userProblemService from "@/apis/service/userProblemService.ts";
+import userCourseService from "@/apis/service/userCourseService.ts";
 
 
 const { Option } = Select;
 
-interface Problem {
+interface Course {
 	id: number;
 	title: string;
 	difficulty: string;
@@ -16,13 +16,13 @@ interface Problem {
 }
 
 // test
-const mockUserProblems = (params: { page: number; limit: number }) => {
-	const allProblems = Array.from({ length: 50 }, (_, index) => ({
+const mockUserCourses = (params: { page: number; limit: number }) => {
+	const allCourses = Array.from({ length: 50 }, (_, index) => ({
 	  id: index + 1,
-	  problem: {
-		problemName: `Problem ${index + 1}`,
+	  course: {
+		courseName: `Course ${index + 1}`,
 		difficulty: ['Easy', 'Medium', 'Hard'][index % 3],
-		problemCode: `P-${index + 1}`,
+		courseCode: `P-${index + 1}`,
 		tags: ['Math', 'Graph', 'DP'].filter((_, i) => i <= index % 3),
 	  },
 	  maxSubmittedPoint: Math.floor(Math.random() * 100),
@@ -31,12 +31,12 @@ const mockUserProblems = (params: { page: number; limit: number }) => {
 	const start = params.page * params.limit;
 	const end = start + params.limit;
 	return {
-	  contents: allProblems.slice(start, end),
-	  totalElements: allProblems.length,
+	  contents: allCourses.slice(start, end),
+	  totalElements: allCourses.length,
 	};
   };
 
-const ProblemListPage = () => {
+const CourseListPage = () => {
 	const navigate = useNavigate();
 	const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState('');
@@ -46,70 +46,45 @@ const ProblemListPage = () => {
 	});
 	
 	const {
-		data: listUserProblemData = {
+		data: listUserCourseData = {
 			contents: [],
 			totalElements: 0,
 		},
-		isLoading: listUserProblemLoading,
+		isLoading: listUserCourseLoading,
 	} = useQuery({
-		queryKey: ['listUserProblem', searchParams, difficultyFilter],
+		queryKey: ['listUserCourse', searchParams, difficultyFilter],
 		queryFn: async ({queryKey}: any) => {
 			const [, pageParams] = queryKey;
-			// return await userProblemService.getAll({
+			// return await userCourseService.getAll({
 			// 	page: pageParams.page,
 			// 	limit: pageParams.limit,
 			// });
 
 			// test
 			await new Promise((resolve) => setTimeout(resolve, 500));
-			return mockUserProblems(pageParams);
+			return mockUserCourses(pageParams);
 		},
 	})
 	
-	const {contents: listUserProblems = [], totalElements = 0} = listUserProblemData || {};
+	const {contents: listUserCourses = [], totalElements = 0} = listUserCourseData || {};
 	
-	const listProblemTableData = useMemo(() => {
-		if(!listUserProblems) return [];
-		return listUserProblems.map((problem: any) => ({
-			id: problem.id,
-			name: problem.problem.problemName,
-			difficulty: problem.problem.difficulty,
-			code: problem.problem.problemCode,
-			point: problem.maxSubmittedPoint,
-			tags: problem.problem.tags,
+	const listCourseTableData = useMemo(() => {
+		if(!listUserCourses) return [];
+		return listUserCourses.map((course: any) => ({
+			id: course.id,
+			name: course.course.courseName,
+			difficulty: course.course.difficulty,
+			code: course.course.courseCode,
+			point: course.maxSubmittedPoint,
+			tags: course.course.tags,
 		}));
-	} , [listUserProblems]);
+	} , [listUserCourses]);
 	
 	const columns = [
 		{
 			title: 'Title',
 			dataIndex: 'name',
 			key: 'name',
-		},
-		{
-			title: 'Code',
-			dataIndex: 'code',
-			key: 'code',
-		},
-		{
-			title: 'Difficulty',
-			dataIndex: 'difficulty',
-			key: 'difficulty',
-			filters: [
-				{ text: 'Easy', value: 'Easy' },
-				{ text: 'Medium', value: 'Medium' },
-				{ text: 'Hard', value: 'Hard' },
-			],
-			onFilter: (value: string | Key | boolean, record: Problem) => record.difficulty === value,
-			render: (difficulty: string) => {
-				const color = difficulty === 'Easy' ? 'green' : difficulty === 'Medium' ? 'orange' : 'red';
-				return <Tag color={color}>{difficulty}</Tag>;
-			},
-		},
-		{
-			title: 'Point',
-			dataIndex: 'point',
-			key: 'point',
 		},
 		{
 			title: 'Tags',
@@ -128,33 +103,23 @@ const ProblemListPage = () => {
 	return (
 		<div style={{ padding: '16px', background: '#fff', minHeight: '100vh' }}>
 			<Space style={{ marginBottom: 16 }}>
-				<Select
-					placeholder="Filter by Difficulty"
-					allowClear
-					onChange={(value) => setDifficultyFilter(value)}
-					style={{ width: 200 }}
-				>
-					<Option value="Easy">Easy</Option>
-					<Option value="Medium">Medium</Option>
-					<Option value="Hard">Hard</Option>
-				</Select>
 				<Input
 					placeholder="Search by title"
 					prefix={<SearchOutlined />}
 					value={searchTerm}
 					onChange={(e) => setSearchTerm(e.target.value)}
-					style={{ width: 200 }}
+					style={{ width: 1620 }}
 				/>
 			</Space>
 			<Table
 				columns={columns}
-				dataSource={listProblemTableData}
-				loading={listUserProblemLoading}
+				dataSource={listCourseTableData}
+				loading={listUserCourseLoading}
 				rowKey="id"
 				onRow={(record: any) => {
 					return {
 						onClick: () => {
-							navigate(`/problems/${record.id}`);
+							navigate(`/courses/${record.id}`);
 						},
 					};
 				}}
@@ -176,4 +141,4 @@ const ProblemListPage = () => {
 	);
 };
 
-export default ProblemListPage;
+export default CourseListPage;

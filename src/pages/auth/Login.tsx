@@ -24,10 +24,17 @@ const Login = () => {
 		}
 
 		try {
-			const response = await userService.login(email, password);
-			localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.jwt);
-			toast.success(t('Login successfully!'));
-			navigate('/');
+			// const response = await userService.login(email, password);
+			// localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.jwt);
+			// toast.success(t('Login successfully!'));
+
+			// test
+			await new Promise((resolve) => setTimeout(resolve, 500));
+			const mockJwt = "mockJwtToken12345";
+			localStorage.setItem(JWT_LOCAL_STORAGE_KEY, mockJwt);
+			toast.success(t("Login successfully!"));
+			
+			navigate("/");
 		} catch (error: any) {
 			toast.error(error?.message || t('Login failed!'));
 		}

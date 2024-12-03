@@ -3,12 +3,12 @@ import {Table, Tag, Select, Input, Space} from 'antd';
 import {useNavigate} from 'react-router-dom';
 import { SearchOutlined } from '@ant-design/icons';
 import {useQuery} from "@tanstack/react-query";
-import userProblemService from "@/apis/service/userProblemService.ts";
+import userContestService from "@/apis/service/userContestService.ts";
 
 
 const { Option } = Select;
 
-interface Problem {
+interface Contest {
 	id: number;
 	title: string;
 	difficulty: string;
@@ -16,13 +16,13 @@ interface Problem {
 }
 
 // test
-const mockUserProblems = (params: { page: number; limit: number }) => {
-	const allProblems = Array.from({ length: 50 }, (_, index) => ({
+const mockUserContests = (params: { page: number; limit: number }) => {
+	const allContests = Array.from({ length: 50 }, (_, index) => ({
 	  id: index + 1,
-	  problem: {
-		problemName: `Problem ${index + 1}`,
+	  contest: {
+		contestName: `Contest ${index + 1}`,
 		difficulty: ['Easy', 'Medium', 'Hard'][index % 3],
-		problemCode: `P-${index + 1}`,
+		contestCode: `P-${index + 1}`,
 		tags: ['Math', 'Graph', 'DP'].filter((_, i) => i <= index % 3),
 	  },
 	  maxSubmittedPoint: Math.floor(Math.random() * 100),
@@ -31,12 +31,12 @@ const mockUserProblems = (params: { page: number; limit: number }) => {
 	const start = params.page * params.limit;
 	const end = start + params.limit;
 	return {
-	  contents: allProblems.slice(start, end),
-	  totalElements: allProblems.length,
+	  contents: allContests.slice(start, end),
+	  totalElements: allContests.length,
 	};
   };
 
-const ProblemListPage = () => {
+const ContestListPage = () => {
 	const navigate = useNavigate();
 	const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState('');
@@ -46,70 +46,45 @@ const ProblemListPage = () => {
 	});
 	
 	const {
-		data: listUserProblemData = {
+		data: listUserContestData = {
 			contents: [],
 			totalElements: 0,
 		},
-		isLoading: listUserProblemLoading,
+		isLoading: listUserContestLoading,
 	} = useQuery({
-		queryKey: ['listUserProblem', searchParams, difficultyFilter],
+		queryKey: ['listUserContest', searchParams, difficultyFilter],
 		queryFn: async ({queryKey}: any) => {
 			const [, pageParams] = queryKey;
-			// return await userProblemService.getAll({
+			// return await userContestService.getAll({
 			// 	page: pageParams.page,
 			// 	limit: pageParams.limit,
 			// });
 
 			// test
 			await new Promise((resolve) => setTimeout(resolve, 500));
-			return mockUserProblems(pageParams);
+			return mockUserContests(pageParams);
 		},
 	})
 	
-	const {contents: listUserProblems = [], totalElements = 0} = listUserProblemData || {};
+	const {contents: listUserContests = [], totalElements = 0} = listUserContestData || {};
 	
-	const listProblemTableData = useMemo(() => {
-		if(!listUserProblems) return [];
-		return listUserProblems.map((problem: any) => ({
-			id: problem.id,
-			name: problem.problem.problemName,
-			difficulty: problem.problem.difficulty,
-			code: problem.problem.problemCode,
-			point: problem.maxSubmittedPoint,
-			tags: problem.problem.tags,
+	const listContestTableData = useMemo(() => {
+		if(!listUserContests) return [];
+		return listUserContests.map((contest: any) => ({
+			id: contest.id,
+			name: contest.contest.contestName,
+			difficulty: contest.contest.difficulty,
+			code: contest.contest.contestCode,
+			point: contest.maxSubmittedPoint,
+			tags: contest.contest.tags,
 		}));
-	} , [listUserProblems]);
+	} , [listUserContests]);
 	
 	const columns = [
 		{
 			title: 'Title',
 			dataIndex: 'name',
 			key: 'name',
-		},
-		{
-			title: 'Code',
-			dataIndex: 'code',
-			key: 'code',
-		},
-		{
-			title: 'Difficulty',
-			dataIndex: 'difficulty',
-			key: 'difficulty',
-			filters: [
-				{ text: 'Easy', value: 'Easy' },
-				{ text: 'Medium', value: 'Medium' },
-				{ text: 'Hard', value: 'Hard' },
-			],
-			onFilter: (value: string | Key | boolean, record: Problem) => record.difficulty === value,
-			render: (difficulty: string) => {
-				const color = difficulty === 'Easy' ? 'green' : difficulty === 'Medium' ? 'orange' : 'red';
-				return <Tag color={color}>{difficulty}</Tag>;
-			},
-		},
-		{
-			title: 'Point',
-			dataIndex: 'point',
-			key: 'point',
 		},
 		{
 			title: 'Tags',
@@ -128,33 +103,23 @@ const ProblemListPage = () => {
 	return (
 		<div style={{ padding: '16px', background: '#fff', minHeight: '100vh' }}>
 			<Space style={{ marginBottom: 16 }}>
-				<Select
-					placeholder="Filter by Difficulty"
-					allowClear
-					onChange={(value) => setDifficultyFilter(value)}
-					style={{ width: 200 }}
-				>
-					<Option value="Easy">Easy</Option>
-					<Option value="Medium">Medium</Option>
-					<Option value="Hard">Hard</Option>
-				</Select>
 				<Input
 					placeholder="Search by title"
 					prefix={<SearchOutlined />}
 					value={searchTerm}
 					onChange={(e) => setSearchTerm(e.target.value)}
-					style={{ width: 200 }}
+					style={{ width: 1620 }}
 				/>
 			</Space>
 			<Table
 				columns={columns}
-				dataSource={listProblemTableData}
-				loading={listUserProblemLoading}
+				dataSource={listContestTableData}
+				loading={listUserContestLoading}
 				rowKey="id"
 				onRow={(record: any) => {
 					return {
 						onClick: () => {
-							navigate(`/problems/${record.id}`);
+							navigate(`/contests/${record.id}`);
 						},
 					};
 				}}
@@ -176,4 +141,4 @@ const ProblemListPage = () => {
 	);
 };
 
-export default ProblemListPage;
+export default ContestListPage;

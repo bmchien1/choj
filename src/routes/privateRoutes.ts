@@ -1,4 +1,4 @@
-import { HomePage, ProblemListPage, ProblemDetailsPage, ProfilePage, CreateProblemPage} from '@/pages';
+import { HomePage, ProblemListPage, ProblemDetailsPage, ProfilePage, CreateProblemPage, ContestListPage, CourseListPage} from '@/pages';
 
 const privateRoutes = {
 	home: {
@@ -20,6 +20,14 @@ const privateRoutes = {
 	admin: {
 		path: '/admin',
 		component: CreateProblemPage,
+	},
+	contests:{
+		path:'/contests',
+		component: ContestListPage,
+	},
+	courses:{
+		path:'/courses',
+		component: CourseListPage,
 	},
 }
 

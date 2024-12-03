@@ -4,7 +4,7 @@ const HomePage = () => {
     return (
         <div className="container mt-5">
             <header className="text-center mb-5">
-                <h1 className="display-4 font-weight-bold">Hệ thống chấm thi và kiểm tra mã nguồn tự động</h1>
+                <h1 className="display-4 font-weight-bold">CHOJ</h1>
                 <p className="lead text-muted">Giải quyết các thử thách lập trình và cải thiện kỹ năng của bạn</p>
             </header>
 

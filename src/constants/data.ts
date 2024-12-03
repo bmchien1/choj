@@ -1,1 +1,1 @@
-export const JWT_LOCAL_STORAGE_KEY = 'agh-jwt-token'
+export const JWT_LOCAL_STORAGE_KEY = 'bmc-jwt-token'
