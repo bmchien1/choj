@@ -52,13 +52,30 @@ const AppHeader = ({setCollapsed, collapsed}: { setCollapsed: (value: boolean) =
 				{/*</div>*/}
 				<Popover
 					className="user"
-					content={() => {
-						return (
-							<Button onClick={handleLogout} icon={<GrLogout/>}>
-								{"Logout"}
+					content={() => (
+						<div>
+							{/* <div className="mb-2">
+								<strong>{user.name}</strong>
+								<div className="text-gray-500 text-sm">{user.email}</div>
+							</div> */}
+							<Button
+								type="primary"
+								block
+								className="mb-2"
+								onClick={() => navigate("/profile")} // Navigate to the profile page
+							>
+								View Profile
 							</Button>
-						)
-					}}
+							<Button
+								danger
+								block
+								icon={<GrLogout />}
+								onClick={handleLogout}
+							>
+								Logout
+							</Button>
+						</div>
+					)}
 					placement={"bottomRight"}
 				>
 					<div className="user-info">

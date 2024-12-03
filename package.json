@@ -9,8 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
-  "dependencies": {
+ "dependencies": {
     "@tanstack/react-query": "^5.59.16",
+    "ace-builds": "^1.36.5",
     "antd": "^5.21.6",
     "choj": "file:",
     "axios": "^1.7.7",
@@ -19,6 +20,7 @@
     "moment": "^2.30.1",
     "query-string": "^9.1.1",
     "react": "^18.3.1",
+    "react-ace": "^13.0.0",
     "react-bootstrap": "^2.10.5",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",

@@ -1,4 +1,4 @@
-import { HomePage, ProblemListPage, ProblemDetailsPage } from '@/pages';
+import { HomePage, ProblemListPage, ProblemDetailsPage, ProfilePage, CreateProblemPage} from '@/pages';
 
 const privateRoutes = {
 	home: {
@@ -12,6 +12,14 @@ const privateRoutes = {
 	problemDetails: {
 		path: '/problems/:problemId',
 		component: ProblemDetailsPage,
+	},
+	profile: {
+		path: '/profile',
+		component: ProfilePage,
+	},
+	admin: {
+		path: '/admin',
+		component: CreateProblemPage,
 	},
 }
 

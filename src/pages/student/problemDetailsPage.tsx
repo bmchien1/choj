@@ -1,163 +1,164 @@
-import { useState } from 'react';
-import { Button, Card, Row, Col, Alert, Tab, Nav, Table } from 'react-bootstrap';
-import { Input, Select, } from 'antd';
-// import {Upload}from 'antd';
-// import { UploadOutlined } from '@ant-design/icons';
-import { useParams } from 'react-router-dom';
+import {useState} from 'react';
+import {Typography, Card, Table, Upload, Button, Tabs} from 'antd';
+import {UploadOutlined} from '@ant-design/icons';
+import AceEditor from "react-ace";
 
-const { Option } = Select;
-const { TextArea } = Input;
+import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/theme-monokai";
 
-interface ProblemDetail {
-  description: string;
-  input: string;
-  output: string;
-  example: string;
-}
+const {Title, Text} = Typography;
+const {TabPane} = Tabs;
 
-const ProblemDetailsPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const [language, setLanguage] = useState<string>('javascript');
-  const [code, setCode] = useState<string>('');
-  // const [file, setFile] = useState<File | null>(null);
-  const [submissionHistory, setSubmissionHistory] = useState<any[]>([]);
-
-  // Placeholder data
-  const problemDetail: ProblemDetail = {
-    description: "Solve the problem by implementing the function.",
-    input: "Input details here",
-    output: "Expected output format here",
-    example: "Example usage of the function",
-  };
-
-  const handleSubmitCode = () => {
-    // Logic for submitting code (API call to backend)
-    const submission = { id: submissionHistory.length + 1, status: 'Pending', time: new Date().toLocaleString() };
-    setSubmissionHistory([...submissionHistory, submission]);
-  };
-
-  // const columns = [
-  //   { title: 'Submission ID', dataIndex: 'id', key: 'id' },
-  //   { title: 'Status', dataIndex: 'status', key: 'status' },
-  //   { title: 'Time', dataIndex: 'time', key: 'time' },
-  // ];
-
-  return (
-    <Card className="mb-4 shadow-lg">
-      <Card.Body>
-        <h3 className="mb-4">Problem Details - Problem {id}</h3>
-
-        <Row className="mb-3">
-          <Col sm={12} md={6}>
-            <h5>Description</h5>
-            <p>{problemDetail.description}</p>
-          </Col>
-          <Col sm={12} md={6}>
-            <h5>Input</h5>
-            <p>{problemDetail.input}</p>
-          </Col>
-        </Row>
-
-        <Row className="mb-3">
-          <Col sm={12} md={6}>
-            <h5>Output</h5>
-            <p>{problemDetail.output}</p>
-          </Col>
-          <Col sm={12} md={6}>
-            <h5>Example</h5>
-            <p>{problemDetail.example}</p>
-          </Col>
-        </Row>
-
-        <Row className="mb-3">
-          <Col sm={12} md={6}>
-            <h5>Choose Language</h5>
-            <Select value={language} onChange={(value: string) => setLanguage(value)} style={{ width: '100%' }}>
-              <Option value="javascript">JavaScript</Option>
-              <Option value="python">Python</Option>
-              <Option value="java">Java</Option>
-              {/* Add more languages as needed */}
-            </Select>
-          </Col>
-        </Row>
-
-        <Tab.Container defaultActiveKey="codeEditor">
-          <Row className="mb-3">
-            <Col sm={12}>
-              <Nav variant="tabs" className="justify-content-start">
-                <Nav.Item>
-                  <Nav.Link eventKey="codeEditor">Code Editor</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="fileUpload">Upload File</Nav.Link>
-                </Nav.Item>
-              </Nav>
-            </Col>
-            <Col sm={12}>
-              <Tab.Content>
-                <Tab.Pane eventKey="codeEditor">
-                  <TextArea
-                    rows={10}
-                    placeholder="Write your code here..."
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    className="w-100"
-                  />
-                </Tab.Pane>
-                {/* <Tab.Pane eventKey="fileUpload">
-                  <Upload 
-                    beforeUpload={(file) => { setFile(file); return false; }}
-                    className="w-100"
-                  >
-                    <Button variant="outline-secondary" className="w-100">
-                      <UploadOutlined /> Choose File
-                    </Button>
-                  </Upload>
-                </Tab.Pane> */}
-              </Tab.Content>
-            </Col>
-          </Row>
-        </Tab.Container>
-
-        <Row className="mt-3">
-          <Col sm={12}>
-            <Button variant="primary" onClick={handleSubmitCode} className="w-100">
-              Submit Code
-            </Button>
-          </Col>
-        </Row>
-
-        <Row className="mt-4">
-          <Col sm={12}>
-            <h5>Submission History</h5>
-            {submissionHistory.length === 0 && (
-              <Alert variant="info">
-                No submissions yet.
-              </Alert>
-            )}
-            <Table responsive striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Submission ID</th>
-                  <th>Status</th>
-                  <th>Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissionHistory.map((submission) => (
-                  <tr key={submission.id}>
-                    <td>{submission.id}</td>
-                    <td>{submission.status}</td>
-                    <td>{submission.time}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
-      </Card.Body>
-    </Card>
-  );
+const ProblemDetail = () => {
+	const [code, setCode] = useState('// Write your code here');
+	
+	// Mock data for test cases
+	const testCases = [
+		{
+			key: '1',
+			input: '1 2',
+			expectedOutput: '3',
+			explanation: 'Sum of 1 and 2'
+		},
+		{
+			key: '2',
+			input: '5 3',
+			expectedOutput: '8',
+			explanation: 'Sum of 5 and 3'
+		}
+	];
+	
+	// Mock data for submissions
+	const submissions = [
+		{
+			key: '1',
+			timestamp: '2023-07-20 10:30',
+			status: 'Accepted',
+			runtime: '0.5s',
+			memory: '5.2MB'
+		},
+		{
+			key: '2',
+			timestamp: '2023-07-20 10:25',
+			status: 'Wrong Answer',
+			runtime: '0.3s',
+			memory: '5.0MB'
+		}
+	];
+	
+	const testCaseColumns = [
+		{
+			title: 'Input',
+			dataIndex: 'input',
+			key: 'input',
+		},
+		{
+			title: 'Expected Output',
+			dataIndex: 'expectedOutput',
+			key: 'expectedOutput',
+		},
+		{
+			title: 'Explanation',
+			dataIndex: 'explanation',
+			key: 'explanation',
+		}
+	];
+	
+	const submissionColumns = [
+		{
+			title: 'Timestamp',
+			dataIndex: 'timestamp',
+			key: 'timestamp',
+		},
+		{
+			title: 'Status',
+			dataIndex: 'status',
+			key: 'status',
+			render: (status: string) => (
+				<Text className={status === 'Accepted' ? 'text-green-500' : 'text-red-500'}>
+					{status}
+				</Text>
+			),
+		},
+		{
+			title: 'Runtime',
+			dataIndex: 'runtime',
+			key: 'runtime',
+		},
+		{
+			title: 'Memory',
+			dataIndex: 'memory',
+			key: 'memory',
+		}
+	];
+	
+	return (
+			<div className="w-full">
+				{/* Problem Title and Description */}
+				<Card className="mb-6">
+					<Title level={2}>Two Sum</Title>
+					<Text className="block mb-4">
+						Given an array of integers nums and an integer target, return indices of the two numbers such that they add
+						up to target. You may assume that each input would have exactly one solution, and you may not use the same
+						element twice.
+					</Text>
+				</Card>
+				
+				{/* Test Cases */}
+				<Card title="Test Cases" className="mb-6">
+					<Table
+						dataSource={testCases}
+						columns={testCaseColumns}
+						pagination={false}
+					/>
+				</Card>
+				
+				{/* Code Editor Section */}
+				<Card title="Solution" className="mb-6">
+					<Tabs defaultActiveKey="1">
+						<TabPane tab="Code Editor" key="1">
+							<div className="h-96">
+								<AceEditor
+									mode="javascript"
+									theme="monokai"
+									onChange={setCode}
+									value={code}
+									fontSize={14}
+									editorProps={{$blockScrolling: true}}
+									setOptions={{
+										enableBasicAutocompletion: true,
+										enableLiveAutocompletion: true,
+										enableSnippets: true,
+										showLineNumbers: true,
+										tabSize: 2,
+									}}
+									style={{width: '100%', height: '100%'}}
+								/>
+							</div>
+						</TabPane>
+						<TabPane tab="Upload File" key="2">
+							<Upload>
+								<Button icon={<UploadOutlined/>}>Upload Solution File</Button>
+							</Upload>
+						</TabPane>
+					</Tabs>
+					<div className="mt-4">
+						<Button type="primary" className="mr-4">
+							Submit Solution
+						</Button>
+						<Button>Run Test Cases</Button>
+					</div>
+				</Card>
+				
+				{/* Submissions */}
+				<Card title="Submissions">
+					<Table
+						dataSource={submissions}
+						columns={submissionColumns}
+					/>
+				</Card>
+			</div>
+	);
 };
 
-export default ProblemDetailsPage;
+export default ProblemDetail;

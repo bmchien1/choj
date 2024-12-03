@@ -4,12 +4,12 @@ import {Layout, Menu} from "antd";
 import './index.css';
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import {Header as AppHeader} from "@/components";
-import {BiCategory} from "react-icons/bi";
-import {FaChalkboardTeacher, FaRegUser} from "react-icons/fa";
-import {IoMdAdd, IoMdHome} from "react-icons/io";
-import {CiBoxList} from "react-icons/ci";
+import {FaCode, FaRegUser} from "react-icons/fa";
+import {IoMdHome} from "react-icons/io";
+import {CiViewList} from "react-icons/ci";
 import {MdSkipNext, MdSkipPrevious} from "react-icons/md";
 import useWindowSize from "@/hooks/useWindowSize.ts";
+import {GrPersonalComputer} from "react-icons/gr";
 
 const {Header, Content, Sider} = Layout;
 
@@ -59,10 +59,9 @@ const PrivateLayout = () => {
 	
 	const items: MenuItem[] = [
 		getItem("Home", "1", <IoMdHome/>),
-		getItem("Menu 1", "2", <BiCategory/>),
-		getItem("Menu 2", "3", <FaChalkboardTeacher/>, [
-			getItem("Sub Menu 1", "3.1", <CiBoxList/>),
-			getItem("Sub Menu 2", "3.2", <IoMdAdd/>),
+		getItem("Coding", "3", <FaCode />, [
+			getItem("My Contests", "3.1", <GrPersonalComputer />),
+			getItem("All Contests", "3.2", <CiViewList />),
 		]),
 		getItem("Menu 3", "4", <FaRegUser/>)
 	];

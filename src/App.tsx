@@ -1,6 +1,6 @@
-import QueryProvider from "./providers/QueryProvider";
-import UpdateProvider from "./providers/UpdateProvider";
-import AppRoutes from "./routes/index.tsx";
+import QueryProvider from "@/providers/QueryProvider.tsx";
+import UpdateProvider from "@/providers/UpdateProvider.tsx";
+import AppRoutes from "@/routes/index.tsx";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
