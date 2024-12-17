@@ -29,6 +29,9 @@ const contestService = {
 		return await axiosClient.delete(`/api/contest/soft/${contestId}`);
 	},
 	
+	
 }
+
+
 
 export default contestService;

@@ -2,9 +2,23 @@ import axiosClient from "@/apis/config/axiosClient";
 import { LoginResponse, RegisterResponse } from "@/apis/type";
 
 const userService = {
+	// login: async (email: string, password: string): Promise<LoginResponse> => {
+	// 	return await axiosClient.post("/api/auth/login", { email, password });
+	// },
 	login: async (email: string, password: string): Promise<LoginResponse> => {
-		return await axiosClient.post("/api/auth/login", { email, password });
-	},
+		return new Promise((resolve) => {
+			setTimeout(() => {
+				resolve({
+					jwt: "mocked_jwt_token_12345",
+					user: {
+						id: 0,
+						email,
+						role: "admin"
+					}
+				});
+			}, 1000);
+		});
+	},	
 	register: async (email: string, password: string): Promise<RegisterResponse> => {
 		return await axiosClient.post("/api/auth/register", { email, password });
 	},

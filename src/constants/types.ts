@@ -3,6 +3,12 @@ export enum ContestStatus {
 	COMPLETED = 'completed',
 }
 
+export enum CourseStatus {
+	RUNNING = 'running',
+	COMPLETED = 'completed',
+}
+
+
 export enum ProblemDifficulty {
 	EASY = 'easy',
 	MEDIUM = 'medium',

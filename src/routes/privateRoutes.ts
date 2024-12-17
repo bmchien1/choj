@@ -21,6 +21,14 @@ const privateRoutes = {
 		path: '/contests',
 		component: ContestListPage,
 	},
+	myCourses: {
+		path: '/my-courses',
+		component: UserContestListPage,
+	},
+	allCourses: {
+		path: '/courses',
+		component: ContestListPage,
+	},
 	problems: {
 		path: '/my-problems/:contestId',
 		component: UserProblemListPage,

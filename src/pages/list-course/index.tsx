@@ -2,15 +2,15 @@ import { useMemo, useState } from "react";
 import { Table, Tag, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { CalendarOutlined, TeamOutlined } from "@ant-design/icons";
-import { formatObject, getContestStatusColor } from "@/utils";
+import { formatObject, getCourseStatusColor } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
-import contestService from "@/apis/service/contestService.ts";
-import { ContestStatus } from "@/constants/types.ts";
+import courseService from "@/apis/service/courseService";
+import { CourseStatus } from "@/constants/types.ts";
 import moment from "moment/moment";
-import joinContestService from "@/apis/service/joinContestService.ts";
+import joinCourseService from "@/apis/service/joinCourseService.ts";
 import toast from "react-hot-toast";
 
-const UserContestList = () => {
+const UserCourseList = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useState({
     page: 0,
@@ -26,26 +26,26 @@ const UserContestList = () => {
   });
 
   const {
-    data: listContestData = {
+    data: listCourseData = {
       contents: [],
       totalElements: 0,
     },
-    isLoading: listContestLoading,
-    refetch: refetchContest,
+    isLoading: listCourseLoading,
+    refetch: refetchCourse,
   } = useQuery({
-    queryKey: ["allContests", searchParams],
+    queryKey: ["allCourses", searchParams],
     queryFn: async ({ queryKey }: any) => {
       const [, searchParams] = queryKey;
-      return await contestService.getAll(formatObject(searchParams));
+      return await courseService.getAll(formatObject(searchParams));
     },
   });
 
-  const { listContests, totalContests } = useMemo(() => {
+  const { listCourses, totalCourses } = useMemo(() => {
     return {
-      listContests: listContestData?.contents || [],
-      totalContests: listContestData?.totalElements || 0,
+      listCourses: listCourseData?.contents || [],
+      totalCourses: listCourseData?.totalElements || 0,
     };
-  }, [listContestData]);
+  }, [listCourseData]);
 
   const {
     data: listRequestData = {
@@ -53,50 +53,49 @@ const UserContestList = () => {
     },
     refetch: refetchRequest,
   } = useQuery({
-    queryKey: ["allUserRequests", listContests],
+    queryKey: ["allUserRequests", listCourses],
     queryFn: async ({ queryKey }: any) => {
-      const [, _listContests] = queryKey;
-      const listContestIds = _listContests
-        .map((contest: any) => contest.id)
+      const [, _listCourses] = queryKey;
+      const listCourseIds = _listCourses
+        .map((course: any) => course.id)
         .join(",");
-      const res = await joinContestService.getMyRequests({
+      const res = await joinCourseService.getMyRequests({
         page: 0,
-        limit: _listContests.length,
-        listContestIds: listContestIds,
+        limit: _listCourses.length,
+        listCourseIds: listCourseIds,
         status: 0,
       });
       return res;
     },
-    enabled: !!listContests,
+    enabled: !!listCourses,
   });
 
-  const listContestsTableData = useMemo(() => {
-    if (!listContests) return [];
+  const listCoursesTableData = useMemo(() => {
+    if (!listCourses) return [];
     const listRequests = listRequestData?.contents || [];
-    return listContests.map((contest: any) => ({
-      title: contest?.contestName,
-      startTime: moment(contest?.creatdAt).format("YYYY-MM-DD HH:mm"),
-      createdBy: contest?.creator,
-      status: contest?.status,
-      key: contest.id,
-      isJoined: contest?.isJoined,
-      id: contest.id,
+    return listCourses.map((course: any) => ({
+      title: course?.courseName,
+      startTime: moment(course?.creatdAt).format("YYYY-MM-DD HH:mm"),
+      createdBy: course?.creator,
+      status: course?.status,
+      key: course.id,
+      isJoined: course?.isJoined,
+      id: course.id,
       isWaiting: listRequests.some(
-        (request: any) =>
-          request.contestId === contest.id && request.status === 0
+        (request: any) => request.courseId === course.id && request.status === 0
       ),
     }));
-  }, [listContests, listRequestData]);
+  }, [listCourses, listRequestData]);
 
   const columns = [
     {
-      title: "Contest",
+      title: "Course",
       dataIndex: "title",
       key: "title",
       render: (text: string, record: any) => (
         <div
           className="cursor-pointer hover:text-blue-500"
-          onClick={() => navigate(`/list-problem?contest=${record.id}`)}
+          onClick={() => navigate(`/list-problem?course=${record.id}`)}
         >
           {text}
         </div>
@@ -129,7 +128,7 @@ const UserContestList = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={getContestStatusColor(status)}>{status}</Tag>
+        <Tag color={getCourseStatusColor(status)}>{status}</Tag>
       ),
     },
     {
@@ -139,7 +138,7 @@ const UserContestList = () => {
         <Button
           type="primary"
           disabled={
-            record.status === ContestStatus.COMPLETED ||
+            record.status === CourseStatus.COMPLETED ||
             record.isJoined ||
             record.isWaiting
           }
@@ -156,25 +155,25 @@ const UserContestList = () => {
     },
   ];
 
-  const handleRegister = async (contestId: number) => {
+  const handleRegister = async (courseId: number) => {
     try {
-      const isWaiting = listContestsTableData.find(
-        (contest: any) => contest.id === contestId
+      const isWaiting = listCoursesTableData.find(
+        (course: any) => course.id === courseId
       )?.isWaiting;
       if (isWaiting) return toast.error("You are already in the waiting list");
 
       setIsLoadingData({
-        id: contestId,
+        id: courseId,
         loading: true,
       });
 
-      await joinContestService.create(contestId);
-      await refetchContest();
+      await joinCourseService.create(courseId);
+      await refetchCourse();
       await refetchRequest();
       toast.success("Your request has been sent");
     } catch (error) {
-      console.error("Error registering contest:", error);
-      toast.error("Failed to register contest");
+      console.error("Error registering course:", error);
+      toast.error("Failed to register course");
     } finally {
       setIsLoadingData({
         id: null,
@@ -186,12 +185,12 @@ const UserContestList = () => {
   return (
     <div className="w-full">
       <Table
-        dataSource={listContestsTableData}
+        dataSource={listCoursesTableData}
         columns={columns}
-        loading={listContestLoading}
+        loading={listCourseLoading}
         pagination={{
           current: searchParams.page + 1,
-          total: totalContests,
+          total: totalCourses,
           pageSize: searchParams.limit,
           onChange: (page) => {
             setSearchParams({
@@ -205,4 +204,4 @@ const UserContestList = () => {
   );
 };
 
-export default UserContestList;
+export default UserCourseList;
