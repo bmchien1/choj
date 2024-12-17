@@ -6,9 +6,15 @@ import publicRoutes from "@/routes/publicRoutes.ts";
 import PrivateLayout from "@/layouts/PrivateLayout.tsx";
 import privateRoutes from "@/routes/privateRoutes.ts";
 import {JWT_LOCAL_STORAGE_KEY} from "@/constants/data.ts";
+import adminRoutes from "@/routes/adminRoutes.ts";
 
-const ProtectedRoute: FC<{element: JSX.Element, requiredLogin: boolean}> = ({element, requiredLogin }) => {
+const ProtectedRoute: FC<{element: JSX.Element, requiredLogin: boolean, requiredAdmin?: boolean}> = ({element, requiredLogin, requiredAdmin = false }) => {
 	const isAuthenticated = localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
+	const userInfo = localStorage.getItem('userInfo');
+	
+	if(requiredAdmin && userInfo && JSON.parse(userInfo).role !== 'admin') {
+		return <Navigate to="/" />;
+	}
 	
 	if(!isAuthenticated && requiredLogin) {
 		return <Navigate to="/login" />;
@@ -42,6 +48,17 @@ const routes = [
 					element:<ProtectedRoute element={<Component />} requiredLogin={false} />,
 				}
 			)),
+		]
+	},
+	{
+		element: <PrivateLayout />,
+		children: [
+			...Object.values(adminRoutes).map(({path, component: Component}) => (
+				{
+					path,
+					element: <ProtectedRoute element={<Component />} requiredLogin={true} requiredAdmin={true}/>,
+				}
+			))
 		]
 	},
 	{

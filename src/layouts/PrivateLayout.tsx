@@ -4,12 +4,14 @@ import {Layout, Menu} from "antd";
 import './index.css';
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import {Header as AppHeader} from "@/components";
-import {FaCode, FaRegUser} from "react-icons/fa";
+import {FaCode, FaRegUser, FaTag} from "react-icons/fa";
 import {IoMdHome} from "react-icons/io";
 import {CiViewList} from "react-icons/ci";
-import {MdSkipNext, MdSkipPrevious} from "react-icons/md";
+import {MdManageAccounts, MdOutlineEmojiEvents, MdOutlineTask, MdSkipNext, MdSkipPrevious} from "react-icons/md";
 import useWindowSize from "@/hooks/useWindowSize.ts";
 import {GrPersonalComputer} from "react-icons/gr";
+import {FaLaptopCode} from "react-icons/fa6";
+import {BsChatSquareQuote} from "react-icons/bs";
 
 const {Header, Content, Sider} = Layout;
 
@@ -31,9 +33,17 @@ function getItem(
 
 const itemRoute = {
 	"1": "/",
-	"2.1": "/problems",
-	"2.2.1": "/contests",
-	"2.3.1": "/courses",
+	"2.1": "/my-contests",
+	"2.2": "/contests",
+	"2.3": "/list-problem",
+	"3.1": "/admin/users",
+	"3.2.1": "/admin/problem/create",
+	"3.2.2": "/admin/problems",
+	"3.2.3": "/admin/tags",
+	"3.3.1": "/admin/contest/create",
+	"3.3.2": "/admin/contests",
+	"3.4": "/admin/join-contest-request",
+	"3.5": "/admin/submissions",
 }
 
 const PrivateLayout = () => {
@@ -56,21 +66,45 @@ const PrivateLayout = () => {
 		}
 	}, [isTablet]);
 	
-	const items: MenuItem[] = [
-		getItem("Home", "1", <IoMdHome/>),
-		getItem("Coding", "2", <FaCode />, [
-			getItem("All Problem", "2.1", <GrPersonalComputer />),
-			getItem("Contests", "2.2", <CiViewList />,[
-				getItem("All Contests", "2.2.1", <CiViewList />),
-				getItem("My Contests", "2.2.2", <CiViewList />),
-			]),
-			getItem("Courses", "2.3", <CiViewList />,[
-				getItem("All Courses", "2.3.1", <CiViewList />),
-				getItem("My Courses", "2.3.2", <CiViewList />),
-			]),		
-		]),
-		getItem("Menu 3", "3", <FaRegUser/>)
-	];
+	const userInfoData = localStorage.getItem('userInfo');
+	
+	const items: MenuItem[] = useMemo(() => {
+		const userInfoData = localStorage.getItem('userInfo');
+		const userInfo = userInfoData ? JSON.parse(userInfoData) : null;
+		if (userInfo && userInfo.role === 'admin') {
+			return [
+				getItem("Home", "1", <IoMdHome/>),
+				getItem("Coding", "2", <FaCode />, [
+					getItem("My Contests", "2.1", <GrPersonalComputer />),
+					getItem("All Contests", "2.2", <CiViewList />),
+					getItem("List Problem", "2.3", <FaLaptopCode />),
+				]),
+				getItem("Admin", "3", <MdManageAccounts />, [
+					getItem("Users", "3.1", <FaRegUser/>),
+					getItem("Problem", "3.2", <FaLaptopCode />, [
+						getItem("Create Problem", "3.2.1", <FaLaptopCode />),
+						getItem("List Problem", "3.2.2", <CiViewList />),
+						getItem("Tags", "3.2.3", <FaTag />),
+					]),
+					getItem("Contest", "3.3", <MdOutlineEmojiEvents />, [
+						getItem("Create Contest", "3.3.1", <MdOutlineEmojiEvents />),
+						getItem("List Contest", "3.3.2", <CiViewList />),
+					]),
+					getItem("Join Contest Request", "3.4", <BsChatSquareQuote />),
+					getItem("Submissions", "3.5", <MdOutlineTask />),
+				])
+			];
+		} else {
+			return [
+				getItem("Home", "1", <IoMdHome/>),
+				getItem("Coding", "2", <FaCode />, [
+					getItem("My Contests", "2.1", <GrPersonalComputer />),
+					getItem("All Contests", "2.2", <CiViewList />),
+					getItem("List Problem", "2.3", <FaLaptopCode />),
+				]),
+			];
+		}
+	}, [userInfoData]);
 	
 	
 	useEffect(() => {

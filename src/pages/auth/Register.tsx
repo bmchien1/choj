@@ -5,11 +5,13 @@ import {Link, useNavigate} from "react-router-dom";
 import toast from "react-hot-toast";
 import userService from "@/apis/service/userService";
 import { AxiosError } from 'axios';
+import {useState} from "react";
 
 const Register = () => {
 	const [form] = Form.useForm();
 	const {t} = useTranslation()
 	const navigate = useNavigate()
+	const [isLoading, setIsLoading] = useState(false);
 	const handleRegister = async (values: { email: string, password: string, confirmPassword: string }) => {
 		const { email, password, confirmPassword } = values;
 		if (password !== confirmPassword) {
@@ -18,12 +20,15 @@ const Register = () => {
 		}
 	
 		try {
+			setIsLoading(true);
 			await userService.register(email, password);
-			toast.success(t('Registration successful!'));
-			navigate('/login');
+			toast.success(t('Registration successful! Please check your email to verify your account.'));
+			navigate("/verify-email?email=" + email);
 		} catch (error) {
 			const errorMessage = (error as AxiosError<{ message: string }>)?.response?.data?.message || t('Registration failed!');
 			toast.error(errorMessage);	
+		} finally {
+			setIsLoading(false);
 		}
 	}
 	return (
@@ -95,6 +100,7 @@ const Register = () => {
 					onClick={form.submit}
 					className="auth-btn bg-black mt-3"
 					size="large"
+					loading={isLoading}
 				>
 					{t("Register")}
 				</Button>

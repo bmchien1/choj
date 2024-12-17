@@ -5,19 +5,24 @@ import {Link, useNavigate} from "react-router-dom";
 import toast from "react-hot-toast";
 import userService from "@/apis/service/userService";
 import { AxiosError } from 'axios';
+import {useState} from "react";
 
 const ForgotPassword = () => {
 	const [form] = Form.useForm();
 	const {t} = useTranslation()
 	const navigate = useNavigate()
+	const [isLoading, setIsLoading] = useState(false);
 	const handleForgotPassword = async (values: { email: string }) => {
 		try {
+			setIsLoading(true);
 			await userService.forgotPassword(values.email);
 			toast.success(t('Password reset email sent!'));
-			navigate('/login');
+			navigate('/reset-password?email=' + values.email);
 		} catch (error) {
 			const errorMessage = (error as AxiosError<{ message: string }>)?.response?.data?.message || t('Failed to send password reset email!');
 			toast.error(errorMessage);	
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -59,6 +64,7 @@ const ForgotPassword = () => {
 					onClick={form.submit}
 					className="auth-btn bg-black mt-3"
 					size="large"
+					loading={isLoading}
 				>
 					{t("Forgot Password")}
 				</Button>

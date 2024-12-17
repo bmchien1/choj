@@ -24,17 +24,17 @@ export default function CodeEditor({code, setCode, mode, ...props}: CodeEditorPr
 			showPrintMargin={true}
 			showGutter={true}
 			highlightActiveLine={true}
-			setShowPrintMargin={true}
-			setShowGutter={true}
 			name={'UNIQUE_ID_OF_DIV'}
 			height={'500px'}
 			editorProps={{$blockScrolling: false}}
+			enableBasicAutocompletion={true}
+			enableLiveAutocompletion={true}
+			enableSnippets={true}
+			enableMobileMenu={true}
 			// @ts-ignore
 			setOptions={{
-				enableBasicAutocompletion: true,
-				enableLiveAutocompletion: true,
-				enableSnippets: true,
 				showLineNumbers: true,
+				tabSize: 2,
 			}}
 			style={{width: '100%'}}
 			{...props}

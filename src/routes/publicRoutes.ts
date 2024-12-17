@@ -1,4 +1,4 @@
-import {ForgotPasswordPage, LoginPage, RegisterPage} from '@/pages';
+import {ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage, VerifyEmailPage} from '@/pages';
 
 const publicRoutes = {
 	login: {
@@ -12,6 +12,14 @@ const publicRoutes = {
 	forgotPassword: {
 		path: '/forgot-password',
 		component: ForgotPasswordPage
+	},
+	verifyEmail: {
+		path: '/verify-email',
+		component: VerifyEmailPage
+	},
+	resetPassword: {
+		path: '/reset-password',
+		component: ResetPasswordPage
 	}
 }
 
