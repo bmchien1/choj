@@ -148,78 +148,40 @@ const UserContestList = () => {
         }}
       >
         <Tabs defaultActiveKey="1">
-          <TabPane tab="Public Contests" key="1">
-            <Flex align={"center"} justify={"space-between"}>
-              <Typography.Title level={4}>Public Contests</Typography.Title>
-              <Space>
-                <Input
-                  allowClear
-                  placeholder="Search by title"
-                  size={"middle"}
-                  value={publicContestParams.q}
-                  onChange={(e) => {
-                    setPublicContestParams({
-                      ...publicContestParams,
-                      q: e.target.value,
-                    });
-                  }}
-                />
-              </Space>
-            </Flex>
-            <Table
-              loading={publicContestLoading}
-              dataSource={publicContestTableData}
-              pagination={{
-                current: publicContestParams.page + 1,
-                total: totalPublicContests,
-                pageSize: publicContestParams.limit,
-                onChange: (page) => {
+          <Flex align={"center"} justify={"space-between"}>
+            <Typography.Title level={4}>Public Contests</Typography.Title>
+            <Space>
+              <Input
+                allowClear
+                placeholder="Search by title"
+                size={"middle"}
+                value={publicContestParams.q}
+                onChange={(e) => {
                   setPublicContestParams({
                     ...publicContestParams,
-                    page: page - 1,
+                    q: e.target.value,
                   });
-                },
-              }}
-              columns={columns}
-              scroll={{ x: "100%" }}
-            />
-          </TabPane>
-          <TabPane tab="Registered Contests" key="2">
-            <Flex align={"center"} justify={"space-between"}>
-              <Typography.Title level={4}>Registered Contests</Typography.Title>
-              <Space>
-                <Input
-                  allowClear
-                  placeholder="Search by title"
-                  size={"middle"}
-                  value={registeredContestParams.q}
-                  onChange={(e) => {
-                    setRegisteredContestParams({
-                      ...registeredContestParams,
-                      q: e.target.value,
-                    });
-                  }}
-                />
-              </Space>
-            </Flex>
-            <Table
-              dataSource={registeredContestTableData}
-              loading={registeredContestLoading}
-              pagination={{
-                current: registeredContestParams.page + 1,
-                total: totalRegisteredContests,
-                pageSize: registeredContestParams.limit,
-                onChange: (page) => {
-                  setRegisteredContestParams({
-                    ...registeredContestParams,
-                    page: page - 1,
-                  });
-                },
-              }}
-              columns={columns}
-              scroll={{ x: "100%" }}
-            />
-          </TabPane>
+                }}
+              />
+            </Space>
+          </Flex>
+          <Table
+            loading={publicContestLoading}
+            dataSource={publicContestTableData}
+            pagination={{
+              current: publicContestParams.page + 1,
+              total: totalPublicContests,
+              pageSize: publicContestParams.limit,
+              onChange: (page) => {
+                setPublicContestParams({
+                  ...publicContestParams,
+                  page: page - 1,
+                });
+              },
+            }}
+            columns={columns}
+            scroll={{ x: "100%" }}
+          />
         </Tabs>
       </Card>
     </div>

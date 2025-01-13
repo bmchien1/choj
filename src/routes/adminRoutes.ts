@@ -7,7 +7,7 @@ import {
 	ListAdminTagPage,
 	CreateTagPage,
 	EditTagPage,
-	ListAdminContestPage, JoinContestRequestsPage, ListAdminSubmissionPage, SubmissionAdminDetailPage, UserManagementPage
+	ListAdminContestPage, JoinContestRequestsPage, ListAdminSubmissionPage, SubmissionAdminDetailPage, UserManagementPage, CreateCoursePage ,ListAdminCoursePage
 } from "@/pages";
 
 const adminRoutes = {
@@ -18,6 +18,10 @@ const adminRoutes = {
 	createContest: {
 		path: '/admin/contest/create',
 		component: CreateContestPage,
+	},
+	createCourse: {
+		path: '/admin/course/create',
+		component: CreateCoursePage,
 	},
 	createTag: {
 		path: '/admin/tag/create',
@@ -38,6 +42,10 @@ const adminRoutes = {
 	listAdminContest: {
 		path: '/admin/contests',
 		component: ListAdminContestPage
+	},
+	listAdminCourse: {
+		path: '/admin/courses',
+		component: ListAdminCoursePage
 	},
 	editTag: {
 		path: '/admin/tag/edit/:id',

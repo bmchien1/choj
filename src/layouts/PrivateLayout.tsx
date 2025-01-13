@@ -52,6 +52,8 @@ const itemRoute = {
   "3.3.2": "/admin/contests",
   "3.4": "/admin/join-contest-request",
   "3.5": "/admin/submissions",
+  "3.6.1": "/admin/course/create",
+  "3.6.2": "/admin/courses",
 };
 
 const PrivateLayout = () => {
@@ -102,6 +104,10 @@ const PrivateLayout = () => {
           ]),
           getItem("Join Contest Request", "3.4", <BsChatSquareQuote />),
           getItem("Submissions", "3.5", <MdOutlineTask />),
+          getItem("Course", "3.6", <MdOutlineEmojiEvents />, [
+            getItem("Create Course", "3.6.1", <MdOutlineEmojiEvents />),
+            getItem("List Course", "3.6.2", <CiViewList />),
+          ]),
         ]),
       ];
     } else {
