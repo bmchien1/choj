@@ -45,8 +45,8 @@ const itemRoute = {
   "2.4": "/courses",
   "2.5": "/list-problem",
   "3.1": "/admin/users",
-  "3.2.1": "/admin/problem/create",
-  "3.2.2": "/admin/problems",
+  "3.2.1": "/admin/question/create",
+  "3.2.2": "/admin/questions",
   "3.2.3": "/admin/tags",
   "3.3.1": "/admin/contest/create",
   "3.3.2": "/admin/contests",
@@ -93,10 +93,9 @@ const PrivateLayout = () => {
         ]),
         getItem("Admin", "3", <MdManageAccounts />, [
           getItem("Users", "3.1", <FaRegUser />),
-          getItem("Problem", "3.2", <FaLaptopCode />, [
-            getItem("Create Problem", "3.2.1", <FaLaptopCode />),
-            getItem("List Problem", "3.2.2", <CiViewList />),
-            getItem("Tags", "3.2.3", <FaTag />),
+          getItem("Question", "3.2", <FaLaptopCode />, [
+            getItem("Create Question", "3.2.1", <FaLaptopCode />),
+            getItem("List Questions", "3.2.2", <CiViewList />),
           ]),
           getItem("Contest", "3.3", <MdOutlineEmojiEvents />, [
             getItem("Create Contest", "3.3.1", <MdOutlineEmojiEvents />),

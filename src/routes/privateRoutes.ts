@@ -2,7 +2,7 @@ import {
 	HomePage,
 	UserContestListPage,
 	ContestListPage,
-	UserProblemListPage,
+	// UserProblemListPage,
 	UserProblemDetailsPage,
 	SubmissionDetailPage,
 	ListProblemPage, ProblemDetailPage, ChangePasswordPage,
@@ -29,10 +29,10 @@ const privateRoutes = {
 		path: '/courses',
 		component: ContestListPage,
 	},
-	problems: {
-		path: '/my-problems/:contestId',
-		component: UserProblemListPage,
-	},
+	// problems: {
+	// 	path: '/my-problems/:contestId',
+	// 	component: UserProblemListPage,
+	// },
 	problemDetails: {
 		path: '/my-problems-detail/:problemId',
 		component: UserProblemDetailsPage,

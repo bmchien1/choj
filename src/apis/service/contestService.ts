@@ -14,7 +14,7 @@ const contestService = {
 	},
 	
 	getAllAdmin: async (query: any = {}): Promise<any> => {
-		return await axiosClient.get("/api/contest/admin", {params: query});
+		return await axiosClient.get("/api/contest", {params: query});
 	},
 	
 	create: async (data: any): Promise<any> => {

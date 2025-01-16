@@ -21,23 +21,19 @@ export enum ProblemDifficulty {
 	HARD = 'hard',
 }
 
-export interface CreateProblemRequest {
-	problemName: string;
-	problemCode: string;
-	difficulty: ProblemDifficulty;
-	maxPoint: number;
-	contestId: number;
-	problemStatement: string;
-	tags: string[];
-	testCases: {
-		input: string;
-		output: string;
-		hidden?: number;
-	}[];
-	cpuTimeLimit?: number;
-	memoryLimit?: number;
-	maxTimeCommit?: number;
-}
+export interface CreateQuestionRequest {
+	question: string;
+	questionType: "multiple-choice" | "short-answer" | "true-false" | "coding";
+	grade: string;
+	subject: string;
+	difficulty_level: string;
+	choices?: { choice: string }[]; // For multiple-choice
+	correctAnswer?: string | boolean; // For short-answer and true-false
+	templateCode?: string; // For coding
+	testCases?: { input: string; expectedOutput: string }[]; // For coding
+  }
+  
+  
 
 export interface Contest {
 	id: number;
@@ -45,7 +41,7 @@ export interface Contest {
 	isPublic: boolean;
 }
 
-export interface ProblemTag {
+export interface QuestionTag {
 	id: number;
 	tagName: string;
 }
