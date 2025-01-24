@@ -37,14 +37,9 @@ const questionService = {
   },
 
   // Get a single question by ID
-  getOne: async (questionId: string) => {
-    try {
-      const response = await axiosClient.get(`/api/question/${questionId}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching question with ID ${questionId}:`, error);
-      throw error;
-    }
+  getOne: async (questionId: number) => {
+      const response = await axiosClient.get(`/api/questions/${questionId}`);
+      return response;
   },
 
   // Get all questions for admin view

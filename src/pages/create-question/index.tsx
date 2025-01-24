@@ -51,6 +51,8 @@ const CreateQuestion: React.FC = () => {
           break;
         case "coding":
           specificData = {
+            memoryLimit: values.memoryLimit,
+            cpuTimeLimit: values.cpuTimeLimit,
             templateCode: values.templateCode,
             testCases: values.testCases,
           };
@@ -286,6 +288,24 @@ const CreateQuestion: React.FC = () => {
           {/* Coding */}
           {questionType === "coding" && (
             <>
+              <Form.Item
+                name="cpuTimeLimit"
+                label="CpuTimeLimit"
+                rules={[
+                  { required: true, message: "Please enter the CpuTimeLimit" },
+                ]}
+              >
+                <Input.TextArea />
+              </Form.Item>
+              <Form.Item
+                name="memoryLimit"
+                label="MemoryLimit"
+                rules={[
+                  { required: true, message: "Please enter the Memory Limit" },
+                ]}
+              >
+                <Input.TextArea />
+              </Form.Item>
               <Form.Item
                 name="templateCode"
                 label="Template Code"

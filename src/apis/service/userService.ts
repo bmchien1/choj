@@ -29,7 +29,10 @@ const userService = {
 			userId,
 			role: role,
 		});
-	}
+	},
+	getMe: async (): Promise<any> => {
+		return await axiosClient.get("/api/auth/me");
+	},
 };
 
 export default userService;

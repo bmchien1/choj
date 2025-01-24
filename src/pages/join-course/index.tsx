@@ -1,20 +1,20 @@
-import {useState, useMemo} from "react";
-import {Table, Button, Tag, message, Space, Select, Input} from "antd";
-import joinContestService from "@/apis/service/joinContestService";
-import {useQuery} from "@tanstack/react-query";
-import {formatObject} from "@/utils";
+import { useState, useMemo } from "react";
+import { Table, Button, Tag, message, Space, Select, Input } from "antd";
+import joinCourseService from "@/apis/service/joinCourseService";
+import { useQuery } from "@tanstack/react-query";
+import { formatObject } from "@/utils";
 import debounce from "lodash/debounce";
 import toast from "react-hot-toast";
 
 const { Option } = Select;
 
-const JoinContestRequestsPage = () => {
+const JoinCourseRequestsPage = () => {
   const [searchParams, setSearchParams] = useState({
     page: 0,
     limit: 10,
     status: "",
     email: "",
-    contestId: "",
+    courseId: "",
   });
   const [searchEmail, setSearchEmail] = useState("");
   const [isLoadingApprove, setIsLoadingApprove] = useState<{
@@ -31,6 +31,7 @@ const JoinContestRequestsPage = () => {
     id: null,
     loading: false,
   });
+
   const {
     data: listRequestsData = {
       contents: [],
@@ -40,21 +41,23 @@ const JoinContestRequestsPage = () => {
     isLoading: loading,
   } = useQuery({
     queryKey: ["allJoinRequests", searchParams],
-    queryFn: async ({ queryKey }: any) => {
-      const [, searchParams] = queryKey;
-      return await joinContestService.getAllRequests(formatObject(searchParams));
+    queryFn: async () => {
+      // console.log(user.id);
+      // console.log(await joinCourseService.getAllJoinRequests());
+      return await joinCourseService.getAllJoinRequests();
     },
   });
 
   const { totalElements: totalRequest } = listRequestsData || {};
   const requestTableData = useMemo(() => {
-    const listRequests = listRequestsData?.contents || [];
+    const listRequests = Array.isArray(listRequestsData)
+      ? listRequestsData
+      : [];
     return listRequests.map((request: any) => ({
       ...request,
       id: request.id,
       email: request?.user?.email,
-      contestName: request?.contest?.contestName,
-      status: request.status,
+      courseName: request?.course?.name,
     }));
   }, [listRequestsData]);
   const handleApprove = async (id: number) => {
@@ -63,7 +66,7 @@ const JoinContestRequestsPage = () => {
         id: id,
         loading: true,
       });
-      await joinContestService.approveRequest(id);
+      await joinCourseService.approveRequest(id, "approve");
       toast.success("Request approved successfully!");
       await fetchRequests();
     } catch (error) {
@@ -83,7 +86,7 @@ const JoinContestRequestsPage = () => {
         id: id,
         loading: true,
       });
-      await joinContestService.rejectRequest(id);
+      await joinCourseService.approveRequest(id, "reject");
       toast.success("Request rejected successfully!");
       await fetchRequests();
     } catch (error) {
@@ -96,7 +99,7 @@ const JoinContestRequestsPage = () => {
       });
     }
   };
-  
+
   const debouncedSearch = useMemo(() => {
     return debounce((value: string) => {
       setSearchParams({
@@ -113,23 +116,9 @@ const JoinContestRequestsPage = () => {
       key: "email",
     },
     {
-      title: "Contest Name",
-      dataIndex: "contestName",
-      key: "contestName",
-    },
-    {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        render: (status: number) => {
-          const statusMap: Record<number, { text: string; color: string }> = {
-            0: { text: "Pending", color: "blue" },
-            1: { text: "Approved", color: "green" },
-            2: { text: "Rejected", color: "red" },
-          };
-          const statusData = statusMap[status as keyof typeof statusMap];
-          return <Tag color={statusData?.color}>{statusData?.text}</Tag>;
-        },
+      title: "Course Name",
+      dataIndex: "courseName",
+      key: "courseName",
     },
     {
       title: "Actions",
@@ -138,17 +127,19 @@ const JoinContestRequestsPage = () => {
         <Space>
           <Button
             type="primary"
-            disabled={record.status !== 0}
             onClick={() => handleApprove(record.id)}
-            loading={isLoadingApprove.loading && isLoadingApprove.id === record.id}
+            loading={
+              isLoadingApprove.loading && isLoadingApprove.id === record.id
+            }
           >
             Approve
           </Button>
           <Button
             type="default"
             danger
-            disabled={record.status !== 0}
-            loading={isLoadingReject.loading && isLoadingReject.id === record.id}
+            loading={
+              isLoadingReject.loading && isLoadingReject.id === record.id
+            }
             onClick={() => handleReject(record.id)}
           >
             Reject
@@ -160,7 +151,7 @@ const JoinContestRequestsPage = () => {
 
   return (
     <div style={{ padding: "16px", background: "#fff", minHeight: "100vh" }}>
-      <h2>Join Contest Requests</h2>
+      <h2>Join Course Requests</h2>
       <Space style={{ marginBottom: 16 }}>
         <Select
           placeholder="Filter by Status"
@@ -178,7 +169,7 @@ const JoinContestRequestsPage = () => {
           <Option value={1}>Approved</Option>
           <Option value={2}>Rejected</Option>
         </Select>
-        
+
         <Input
           placeholder="Search by email"
           value={searchEmail}
@@ -210,4 +201,4 @@ const JoinContestRequestsPage = () => {
   );
 };
 
-export default JoinContestRequestsPage;
+export default JoinCourseRequestsPage;

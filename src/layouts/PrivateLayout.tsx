@@ -39,8 +39,8 @@ function getItem(
 
 const itemRoute = {
   "1": "/",
-  "2.1": "/my-contests",
-  "2.2": "/contests",
+  // "2.1": "/my-contests",
+  // "2.2": "/contests",
   "2.3": "/my-courses",
   "2.4": "/courses",
   "2.5": "/list-problem",
@@ -85,11 +85,11 @@ const PrivateLayout = () => {
       return [
         getItem("Home", "1", <IoMdHome />),
         getItem("Coding", "2", <FaCode />, [
-          getItem("My Contests", "2.1", <GrPersonalComputer />),
-          getItem("All Contests", "2.2", <CiViewList />),
+          // getItem("My Contests", "2.1", <GrPersonalComputer />),
+          // getItem("All Contests", "2.2", <CiViewList />),
           getItem("My Courses", "2.3", <GrPersonalComputer />),
           getItem("All Courses", "2.4", <CiViewList />),
-          getItem("List Problem", "2.5", <FaLaptopCode />),
+          // getItem("List Problem", "2.5", <FaLaptopCode />),
         ]),
         getItem("Admin", "3", <MdManageAccounts />, [
           getItem("Users", "3.1", <FaRegUser />),
@@ -97,11 +97,11 @@ const PrivateLayout = () => {
             getItem("Create Question", "3.2.1", <FaLaptopCode />),
             getItem("List Questions", "3.2.2", <CiViewList />),
           ]),
-          getItem("Contest", "3.3", <MdOutlineEmojiEvents />, [
-            getItem("Create Contest", "3.3.1", <MdOutlineEmojiEvents />),
-            getItem("List Contest", "3.3.2", <CiViewList />),
-          ]),
-          getItem("Join Contest Request", "3.4", <BsChatSquareQuote />),
+          // getItem("Contest", "3.3", <MdOutlineEmojiEvents />, [
+          //   getItem("Create Contest", "3.3.1", <MdOutlineEmojiEvents />),
+          //   getItem("List Contest", "3.3.2", <CiViewList />),
+          // ]),
+          getItem("Join Course Request", "3.4", <BsChatSquareQuote />),
           getItem("Submissions", "3.5", <MdOutlineTask />),
           getItem("Course", "3.6", <MdOutlineEmojiEvents />, [
             getItem("Create Course", "3.6.1", <MdOutlineEmojiEvents />),

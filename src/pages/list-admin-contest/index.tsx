@@ -29,7 +29,7 @@ const ListAdminContest = () => {
     queryKey: ["allAdminContests", searchParams],
     queryFn: async ({ queryKey }: any) => {
       const [, searchParams] = queryKey;
-      console.log(await contestService.getAllAdmin(formatObject(searchParams)));
+      // console.log(await contestService.getAllAdmin(formatObject(searchParams)));
       return await contestService.getAllAdmin(formatObject(searchParams));
     },
   });
@@ -38,7 +38,6 @@ const ListAdminContest = () => {
 
   const listContestsTableData = useMemo(() => {
     if (!listContests) return [];
-    console.log(listContests);
     return listContests.map((contest: any) => ({
       test_name: contest?.test_name,
       //   startTime: moment(contest?.creatdAt).format("YYYY-MM-DD HH:mm"),

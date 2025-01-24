@@ -29,7 +29,7 @@ const ListAdminCourse = () => {
     queryFn: async ({ queryKey }: any) => {
       const [, searchParams] = queryKey;
       //   console.log(await courseService.getAllAdmin(formatObject(searchParams)));
-      return await courseService.getAllAdmin(formatObject(searchParams));
+      return await courseService.getAll(formatObject(searchParams));
     },
   });
 
@@ -68,7 +68,7 @@ const ListAdminCourse = () => {
       render: (text: string, record: any) => (
         <div
           className="cursor-pointer hover:text-blue-500"
-          onClick={() => navigate(`/list-problem?course=${record.id}`)}
+          onClick={() => navigate(`/courses/details/${record.id}`)}
         >
           {text}
         </div>

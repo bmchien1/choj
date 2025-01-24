@@ -9,8 +9,9 @@ import { CourseStatus } from "@/constants/types.ts";
 import moment from "moment/moment";
 import joinCourseService from "@/apis/service/joinCourseService.ts";
 import toast from "react-hot-toast";
+import axiosClient from "@/apis/config/axiosClient";
 
-const UserCourseList = () => {
+const AllCourseList = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useState({
     page: 0,
@@ -24,6 +25,15 @@ const UserCourseList = () => {
     id: null,
     loading: false,
   });
+  const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  // console.log(user);
+  // const { data: user, isLoading: userLoading } = useQuery({
+  //   queryKey: ["currentUser"],
+  //   queryFn: async () => {
+  //     const response = await axiosClient.get("/api/auth/me");
+  //     return response.data;
+  //   },
+  // });
 
   const {
     data: listCourseData = {
@@ -36,75 +46,75 @@ const UserCourseList = () => {
     queryKey: ["allCourses", searchParams],
     queryFn: async ({ queryKey }: any) => {
       const [, searchParams] = queryKey;
-      return await courseService.getAll(formatObject(searchParams));
+      return await courseService.getAllAdmin(formatObject(searchParams));
     },
   });
 
-  const { listCourses, totalCourses } = useMemo(() => {
-    return {
-      listCourses: listCourseData?.contents || [],
-      totalCourses: listCourseData?.totalElements || 0,
-    };
-  }, [listCourseData]);
+  const listCourses = Array.isArray(listCourseData) ? listCourseData : [];
+  const totalCourses = listCourseData.totalElements || 0;
 
   const {
-    data: listRequestData = {
+    data: listUserInCourseData = {
+      contents: [],
+    },
+    refetch: refetchUserInCourse,
+  } = useQuery({
+    queryKey: ["allUserRequests", listCourses],
+    queryFn: async () => {
+      return await joinCourseService.getUserInCourseByUser(user.id);
+    },
+    enabled: !!listCourses,
+  });
+
+  const {
+    data: listRequestsData = {
       contents: [],
     },
     refetch: refetchRequest,
   } = useQuery({
     queryKey: ["allUserRequests", listCourses],
-    queryFn: async ({ queryKey }: any) => {
-      const [, _listCourses] = queryKey;
-      const listCourseIds = _listCourses
-        .map((course: any) => course.id)
-        .join(",");
-      const res = await joinCourseService.getMyRequests({
-        page: 0,
-        limit: _listCourses.length,
-        listCourseIds: listCourseIds,
-        status: 0,
-      });
-      return res;
+    queryFn: async () => {
+      return await joinCourseService.getJoinRequestsByUser(user.id);
     },
     enabled: !!listCourses,
   });
 
   const listCoursesTableData = useMemo(() => {
     if (!listCourses) return [];
-    const listRequests = listRequestData?.contents || [];
+    const listUserInCourses = Array.isArray(listUserInCourseData)
+      ? listUserInCourseData
+      : [];
+
+    const listRequestsData = Array.isArray(listUserInCourseData)
+      ? listUserInCourseData
+      : [];
     return listCourses.map((course: any) => ({
-      title: course?.courseName,
-      startTime: moment(course?.creatdAt).format("YYYY-MM-DD HH:mm"),
-      createdBy: course?.creator,
-      status: course?.status,
+      name: course.name,
+      description: course.description,
+      class: course.class,
       key: course.id,
-      isJoined: course?.isJoined,
       id: course.id,
-      isWaiting: listRequests.some(
-        (request: any) => request.courseId === course.id && request.status === 0
+      isJoined: listUserInCourses.some(
+        (request: any) => request.course.id === course.id
+      ),
+      isWaiting: listUserInCourses.some(
+        (request: any) =>
+          request.course.id === course.id && request.approve === false
       ),
     }));
-  }, [listCourses, listRequestData]);
+  }, [listCourses, listUserInCourseData]);
 
   const columns = [
     {
-      title: "Course",
-      dataIndex: "title",
-      key: "title",
-      render: (text: string, record: any) => (
-        <div
-          className="cursor-pointer hover:text-blue-500"
-          onClick={() => navigate(`/list-problem?course=${record.id}`)}
-        >
-          {text}
-        </div>
-      ),
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      render: (text: string, record: any) => <div>{text}</div>,
     },
     {
-      title: "Start Time",
-      dataIndex: "startTime",
-      key: "startTime",
+      title: "Class",
+      dataIndex: "class",
+      key: "class",
       render: (text: string) => (
         <span>
           <CalendarOutlined className="mr-2" />
@@ -113,22 +123,14 @@ const UserCourseList = () => {
       ),
     },
     {
-      title: "Created By",
-      dataIndex: "createdBy",
-      key: "createdBy",
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
       render: (text: string) => (
         <span>
           <TeamOutlined className="mr-2" />
           {text}
         </span>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={getCourseStatusColor(status)}>{status}</Tag>
       ),
     },
     {
@@ -167,7 +169,7 @@ const UserCourseList = () => {
         loading: true,
       });
 
-      await joinCourseService.create(courseId);
+      await joinCourseService.create(user.id, courseId);
       await refetchCourse();
       await refetchRequest();
       toast.success("Your request has been sent");
@@ -204,4 +206,4 @@ const UserCourseList = () => {
   );
 };
 
-export default UserCourseList;
+export default AllCourseList;

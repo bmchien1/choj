@@ -11,10 +11,14 @@ const CreateCourse: React.FC = () => {
     try {
       setLoading(true);
 
+      const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+
       const courseData = {
         name: values.name,
         description: values.description,
         class: values.class,
+        subject: values.subject,
+        creatorId: user.id,
       };
 
       const response = await courseService.create(courseData);
@@ -47,6 +51,14 @@ const CreateCourse: React.FC = () => {
             name="class"
             label="Class"
             rules={[{ required: true, message: "Please enter the class" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="subject"
+            label="Subject"
+            rules={[{ required: true, message: "Please enter the subject" }]}
           >
             <Input />
           </Form.Item>

@@ -36,16 +36,12 @@ const UserContestList = () => {
     queryKey: ["allContests", searchParams],
     queryFn: async ({ queryKey }: any) => {
       const [, searchParams] = queryKey;
-      return await contestService.getAll(formatObject(searchParams));
+      return await contestService.getAllAdmin(formatObject(searchParams));
     },
   });
 
-  const { listContests, totalContests } = useMemo(() => {
-    return {
-      listContests: listContestData?.contents || [],
-      totalContests: listContestData?.totalElements || 0,
-    };
-  }, [listContestData]);
+  const listContests = Array.isArray(listContestData) ? listContestData : [];
+  const totalContests = listContestData.totalElements || 0;
 
   const {
     data: listRequestData = {
@@ -74,9 +70,9 @@ const UserContestList = () => {
     if (!listContests) return [];
     const listRequests = listRequestData?.contents || [];
     return listContests.map((contest: any) => ({
-      title: contest?.contestName,
-      startTime: moment(contest?.creatdAt).format("YYYY-MM-DD HH:mm"),
-      createdBy: contest?.creator,
+      test_name: contest?.test_name,
+      grade: contest?.grade,
+      description: contest?.description,
       status: contest?.status,
       key: contest.id,
       isJoined: contest?.isJoined,
@@ -91,8 +87,8 @@ const UserContestList = () => {
   const columns = [
     {
       title: "Contest",
-      dataIndex: "title",
-      key: "title",
+      dataIndex: "test_name",
+      key: "test_name",
       render: (text: string, record: any) => (
         <div
           className="cursor-pointer hover:text-blue-500"
@@ -103,9 +99,9 @@ const UserContestList = () => {
       ),
     },
     {
-      title: "Start Time",
-      dataIndex: "startTime",
-      key: "startTime",
+      title: "Grade",
+      dataIndex: "grade",
+      key: "grade",
       render: (text: string) => (
         <span>
           <CalendarOutlined className="mr-2" />
@@ -114,22 +110,14 @@ const UserContestList = () => {
       ),
     },
     {
-      title: "Created By",
-      dataIndex: "createdBy",
-      key: "createdBy",
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
       render: (text: string) => (
         <span>
           <TeamOutlined className="mr-2" />
           {text}
         </span>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={getContestStatusColor(status)}>{status}</Tag>
       ),
     },
     {

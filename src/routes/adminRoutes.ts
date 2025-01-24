@@ -5,7 +5,7 @@ import {
 	ListAdminQuestionPage,
 	EditContestPage,
 	ListAdminTagPage,
-	ListAdminContestPage, JoinContestRequestsPage, ListAdminSubmissionPage, SubmissionAdminDetailPage, UserManagementPage, CreateCoursePage ,ListAdminCoursePage
+	ListAdminContestPage, JoinContestRequestsPage, ListAdminSubmissionPage, SubmissionAdminDetailPage, UserManagementPage, CreateCoursePage ,ListAdminCoursePage, AdminCourseDetail
 } from "@/pages";
 
 const adminRoutes = {
@@ -60,6 +60,10 @@ const adminRoutes = {
 	listUsers: {
 		path: '/admin/users',
 		component: UserManagementPage
+	},
+	courseDetail: {
+		path: '/courses/details/:id',
+		component: AdminCourseDetail
 	}
 }
 

@@ -1,22 +1,28 @@
 import axiosClient from "@/apis/config/axiosClient";
 
 const joinCourseService = {
-  getMyRequests: async (query: any): Promise<any> => {
-    console.log("query", query);
-    return await axiosClient.get("/api/join-course-requests/me", { params: query });
+  getJoinRequestsByUser: async (id: number): Promise<any> => {
+    // console.log("query", query);
+    return await axiosClient.get(`/api/join/user/${id}`);
   },
-  getAllRequests: async (query: any): Promise<any> => {
-    return await axiosClient.get("/api/join-course-requests", { params: query });
+  getRequestsByCreator: async (id: number): Promise<any> => {
+    return await axiosClient.get(`/api/join/${id}`);
   },
-  approveRequest: async (id: number): Promise<any> => {
-    return await axiosClient.put(`/api/join-course-requests/approve/${id}`);
+  approveRequest: async (id: number,action:string): Promise<any> => {
+    return await axiosClient.put(`/api/join/${id}`,{action});
   },
-  rejectRequest: async (id: number): Promise<any> => {
-    return await axiosClient.put(`/api/join-course-requests/reject/${id}`);
+  create: async (userId:number,courseId: number): Promise<any> => {
+    return await axiosClient.post("/api/join", { userId,courseId });
   },
-  create: async (courseId: number): Promise<any> => {
-    return await axiosClient.post("/api/join-course-requests", { courseId });
+  getAllJoinRequests: async (): Promise<any> => {
+    // console.log("query", query);
+    return await axiosClient.get("/api/join");
   },
+  getUserInCourseByUser: async (id: number): Promise<any> => {
+    // console.log("query", query);
+    return await axiosClient.get(`/api/user-in-course/${id}`);
+  },
+  
 };
 
 export default joinCourseService;

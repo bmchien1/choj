@@ -1,11 +1,13 @@
 import {
 	HomePage,
 	UserContestListPage,
-	ContestListPage,
+	// ContestListPage,
 	// UserProblemListPage,
 	UserProblemDetailsPage,
 	SubmissionDetailPage,
-	ListProblemPage, ProblemDetailPage, ChangePasswordPage,
+	ListProblemPage, ProblemDetailPage, ChangePasswordPage,CourseListPage,UserCourseListPage,
+	UserCourseDetail,
+	DoAssignmentPage
 } from '@/pages';
 
 const privateRoutes = {
@@ -13,21 +15,21 @@ const privateRoutes = {
 		path: '/',
 		component: HomePage,
 	},
-	myContests: {
-		path: '/my-contests',
-		component: UserContestListPage,
-	},
-	allContests: {
-		path: '/contests',
-		component: ContestListPage,
-	},
+	// myContests: {
+	// 	path: '/my-contests',
+	// 	component: UserContestListPage,
+	// },
+	// allContests: {
+	// 	path: '/contests',
+	// 	component: ContestListPage,
+	// },
 	myCourses: {
 		path: '/my-courses',
-		component: UserContestListPage,
+		component: UserCourseListPage,
 	},
 	allCourses: {
 		path: '/courses',
-		component: ContestListPage,
+		component: CourseListPage,
 	},
 	// problems: {
 	// 	path: '/my-problems/:contestId',
@@ -53,6 +55,14 @@ const privateRoutes = {
 		path: '/change-password',
 		component: ChangePasswordPage,
 	},
+	CourseDetail:{
+		path: '/my-courses/:id',
+		component: UserCourseDetail,
+	},
+	DoAssignment:{
+		path: '/my-courses/:id/assignment/:assignmentId',
+		component: DoAssignmentPage,
+	}
 }
 
 export default privateRoutes;
