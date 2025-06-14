@@ -4,7 +4,7 @@ import userService from "@/apis/service/userService";
 import { JWT_LOCAL_STORAGE_KEY } from "@/constants/data.ts";
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "https://choj-node.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
