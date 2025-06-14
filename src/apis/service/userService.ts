@@ -1,38 +1,42 @@
 import axiosClient from "@/apis/config/axiosClient";
-import { LoginResponse, RegisterResponse } from "@/apis/type";
+import { LoginResponse, RegisterResponse, User, UserRole, LoginCredentials } from "@/apis/type";
 
 const userService = {
-	login: async (email: string, password: string): Promise<LoginResponse> => {
-		return await axiosClient.post("/api/auth/login", { email, password });
-	},
-	register: async (email: string, password: string): Promise<RegisterResponse> => {
-		//console.log( { email, password });
-		return await axiosClient.post("/api/auth/register", { email, password });
-	},
-	resendVerificationEmail: async (email: string): Promise<any> => {
-		return await axiosClient.post("/api/auth/resend-verification-email", { email });
-	},
-	forgotPassword: async (email: string): Promise<any> => {
-		return await axiosClient.post("/api/auth/forgot-password", { email });
-	},
-	resetPassword: async (email: string, password: string, code: string): Promise<any> => {
-		return await axiosClient.post("/api/auth/reset-password", { email, password, code });
-	},
-	changePassword: async (oldPassword: string, newPassword: string): Promise<any> => {
-		return await axiosClient.post("/api/auth/change-password", { oldPassword, newPassword });
-	},
-	getUsers: async (params: any = {}): Promise<any> => {
-		return await axiosClient.get("/api/auth/users", { params });
-	},
-	updateUserRole: async (userId: number, role: 'user' |'teacher'| 'admin'): Promise<any> => {
-		return await axiosClient.put(`/api/auth/update-user/`, {
-			userId,
-			role: role,
-		});
-	},
-	getMe: async (): Promise<any> => {
-		return await axiosClient.get("/api/auth/me");
-	},
+  login: async (data: LoginCredentials): Promise<LoginResponse> => {
+    try {
+      const response = await axiosClient.post("/api/auth/login", data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  register: async (data: LoginCredentials): Promise<User> => {
+    const response = await axiosClient.post("/api/auth/register", data);
+    return response.data;
+  },
+  refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
+    const response = await axiosClient.post("/api/auth/refresh-token", { refreshToken });
+    return response.data;
+  },
+  logout: async (): Promise<{ message: string }> => {
+    const response = await axiosClient.post("/api/auth/logout", {});
+    return response.data;
+  },
+  getAllUsers: async (): Promise<User[]> => {
+    const response = await axiosClient.get("/api/auth/users");
+    return response.data;
+  },
+  updateUserRole: async (data: UserRole): Promise<User> => {
+    const response = await axiosClient.put("/api/auth/update-user", {
+      userId: data.id,
+      role: data.role,
+    });
+    return response.data;
+  },
+  getMe: async (): Promise<User> => {
+    const response = await axiosClient.get("/api/auth/me");
+    return response.data;
+  },
 };
 
 export default userService;

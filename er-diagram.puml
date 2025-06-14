@@ -1,0 +1,91 @@
+@startuml ER Diagram
+
+' Base entity attributes
+entity BaseEntity {
+  * id : number <<PK>>
+  * createdAt : Date
+  * updatedAt : Date
+  * deletedAt : Date
+}
+
+' Main entities
+entity User {
+  * email : string
+  * password : string
+  * role : AppRole
+  avatar_url : string
+  access_token : string
+  refresh_token : string
+}
+
+entity Course {
+  * name : string
+  * description : text
+  * class : string
+  * subject : string
+}
+
+entity Chapter {
+  * name : string
+  * description : text
+}
+
+entity Lesson {
+  * name : string
+  * description : text
+  * content : text
+}
+
+entity Assignment {
+  * name : string
+  * description : text
+  * dueDate : Date
+}
+
+entity Question {
+  * content : text
+  * answer : text
+  * difficulty : DifficultyLevel
+}
+
+entity Contest {
+  * name : string
+  * description : text
+  * startTime : Date
+  * endTime : Date
+}
+
+entity Submission {
+  * content : text
+  * score : number
+}
+
+' Relationships
+User ||--o{ Course : creates
+User ||--o{ Contest : creates
+User ||--o{ Question : creates
+User ||--o{ Tag : creates
+
+Course ||--o{ Chapter : contains
+Course ||--o{ Lesson : contains
+Course ||--o{ Assignment : contains
+
+Chapter ||--o{ Lesson : contains
+Chapter ||--o{ Question : contains
+
+Contest ||--o{ Question : contains
+
+User ||--o{ Submission : submits
+Question ||--o{ Submission : receives
+
+' Inheritance
+BaseEntity <|-- User
+BaseEntity <|-- Course
+BaseEntity <|-- Chapter
+BaseEntity <|-- Lesson
+BaseEntity <|-- Assignment
+BaseEntity <|-- Question
+BaseEntity <|-- Contest
+BaseEntity <|-- Submission
+
+@enduml 

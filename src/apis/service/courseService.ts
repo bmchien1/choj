@@ -1,91 +1,41 @@
 import axiosClient from "@/apis/config/axiosClient.ts";
+import { Course } from "../type";
 
 const courseService = {
-
-  getAll: async (query: any = {}): Promise<any> => {
-	// console.log(await axiosClient.get("/api/courses", {params: query}));
-	return await axiosClient.get("/api/courses", {params: query});
-},
-
-getOne: async (courseId: string): Promise<any> => {
-	return await axiosClient.get(`/api/course/${courseId}`);
-},
-
-getOneAdmin: async (courseId: string): Promise<any> => {
-	return await axiosClient.get(`/api/course/admin/${courseId}`);
-},
-
-getAllAdmin: async (query: any = {}): Promise<any> => {
-			// console.log(await axiosClient.get("/api/courses", {params: query}));
-	return await axiosClient.get("/api/courses", {params: query});
-},
-
-
-  getByUser: async (userId: any) => {
-    return await axiosClient.get(`/api/courses/by-user/${userId}`);
+  getAll: async (): Promise<{ courses: Course[]; pagination: any }> => {
+    const response = await axiosClient.get("/api/courses");
+    return response.data;
   },
 
-  getByCreator: async (creatorId: any) => {
-    return await axiosClient.get(`/api/courses/by-creator/${creatorId}`);
+  getById: async (courseId: string): Promise<Course> => {
+    const response = await axiosClient.get(`/api/courses/${courseId}`);
+    return response.data;
   },
 
-  create: async (data: any) => {
-    return await axiosClient.post("/api/courses", data);
+  getByCreator: async (creatorId: string): Promise<Course[]> => {
+    const response = await axiosClient.get(`/api/courses/creator/${creatorId}`);
+    return response.data;
   },
 
-  update: async (courseId: any, data: any) => {
-    return await axiosClient.put(`/api/courses/${courseId}`, data);
+  create: async (data: Course): Promise<Course> => {
+    const response = await axiosClient.post("/api/courses", data);
+    return response.data;
   },
 
-  delete: async (courseId: any) => {
-    return await axiosClient.delete(`/api/courses/${courseId}`);
+  update: async (courseId: string, data: Partial<Course>): Promise<Course> => {
+    const response = await axiosClient.put(`/api/courses/${courseId}`, data);
+    return response.data;
   },
 
-  getLessons: async (courseId: any) => {
-    return await axiosClient.get(`/api/courses/${courseId}/lessons`);
+  delete: async (courseId: string): Promise<{ message: string }> => {
+    const response = await axiosClient.delete(`/api/courses/${courseId}`);
+    return response.data;
   },
 
-  getLessonById: async (lessonId: any) => {
-    return await axiosClient.get(`/api/courses/lessons/${lessonId}`);
+  getCourseContent: async (courseId: string): Promise<Array<{ type: string; id: number; title: string; order: number }>> => {
+    const response = await axiosClient.get(`/api/courses/${courseId}/content`);
+    return response.data;
   },
-
-  createLesson: async (courseId: any, data: any) => {
-	console.log(data);
-    return await axiosClient.post(`/api/courses/${courseId}/lessons`, data);
-  },
-
-  updateLesson: async (lessonId: any, data: any) => {
-    return await axiosClient.put(`/api/courses/lessons/${lessonId}`, data);
-  },
-
-  deleteLesson: async (lessonId: any) => {
-    return await axiosClient.delete(`/api/courses/lessons/${lessonId}`);
-  },
-
-  getAssignments: async (courseId: any) => {
-    return await axiosClient.get(`/api/courses/${courseId}/assignments`);
-  },
-
-  getAssignmentById: async (assignmentId: any) => {
-    return await axiosClient.get(`/api/courses/assignments/${assignmentId}`);
-  },
-
-  createAssignment: async (courseId: any, data: any) => {
-    return await axiosClient.post(`/api/courses/${courseId}/assignments`, data);
-  },
-
-  updateAssignment: async (assignmentId: any, data: any) => {
-    return await axiosClient.put(`/api/courses/assignments/${assignmentId}`, data);
-  },
-
-  deleteAssignment: async (assignmentId: any) => {
-    return await axiosClient.delete(`/api/courses/assignments/${assignmentId}`);
-  },
-
-  uploadFile: async (fileData: FormData) => {
-	return await axiosClient.post("/upload", fileData);
-  }
-  
 };
 
 export default courseService;

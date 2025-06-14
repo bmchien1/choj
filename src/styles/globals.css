@@ -1,0 +1,8 @@
+.question-menu-item:hover {
+  background-color: #000000 !important;
+}
+
+.question-menu-item.ant-menu-item-selected {
+  background-color: #646464 !important;
+  color: #ff6a00 !important;
+} 

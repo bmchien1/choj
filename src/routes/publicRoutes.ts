@@ -1,5 +1,4 @@
-import {ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage} from '@/pages';
-
+import { LoginPage, RegisterPage} from '@/pages';
 const publicRoutes = {
 	login: {
 		path: '/login',
@@ -9,14 +8,14 @@ const publicRoutes = {
 		path: '/register',
 		component: RegisterPage,
 	},
-	forgotPassword: {
-		path: '/forgot-password',
-		component: ForgotPasswordPage
-	},
-	resetPassword: {
-		path: '/reset-password',
-		component: ResetPasswordPage
-	}
+	// forgotPassword: {
+	// 	path: '/forgot-password',
+	// 	component: ForgotPasswordPage
+	// },
+	// resetPassword: {
+	// 	path: '/reset-password',
+	// 	component: ResetPasswordPage
+	// }
 }
 
 export default publicRoutes;

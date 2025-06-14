@@ -4,38 +4,51 @@ import PublicLayout from "@/layouts/PublicLayout.tsx";
 import { NotFoundPage } from "@/pages";
 import publicRoutes from "@/routes/publicRoutes.ts";
 import PrivateLayout from "@/layouts/PrivateLayout.tsx";
-import privateRoutes from "@/routes/privateRoutes.ts";
-import { JWT_LOCAL_STORAGE_KEY } from "@/constants/data.ts";
+import studentRoutes from "@/routes/studentRoutes.ts";
+import teacherRoutes from "@/routes/teacherRoutes.ts";
 import adminRoutes from "@/routes/adminRoutes.ts";
+import { JWT_LOCAL_STORAGE_KEY } from "@/constants/data.ts";
 
 const ProtectedRoute: FC<{
   element: JSX.Element;
   requiredLogin: boolean;
   requiredAdmin?: boolean;
   requiredTeacher?: boolean;
+  path?: string;
 }> = ({
   element,
   requiredLogin,
   requiredAdmin = false,
   requiredTeacher = false,
+  path,
 }) => {
-  const isAuthenticated = localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
-  const userInfo = localStorage.getItem("userInfo");
+  const isAuthenticated = !!localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
+  let userRole: string | null = null;
 
-  if (requiredAdmin && userInfo && JSON.parse(userInfo).role !== "admin") {
-    return <Navigate to="/" />;
+  try {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      const parsed = JSON.parse(userInfo);
+      userRole = parsed.role || null;
+    }
+  } catch (error) {
+    console.error(`Failed to parse userInfo for route ${path}:`, error);
   }
 
-  if (requiredTeacher && userInfo && JSON.parse(userInfo).role !== "teacher") {
-    return <Navigate to="/" />;
+  if (requiredAdmin && userRole !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  if (requiredTeacher && !["teacher", "admin"].includes(userRole || "")) {
+    return <Navigate to="/" replace />;
   }
 
   if (!isAuthenticated && requiredLogin) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  if (isAuthenticated && !requiredLogin) {
-    return <Navigate to="/" />;
+  if (isAuthenticated && !requiredLogin && path !== "/login") {
+    return <Navigate to="/" replace />;
   }
 
   return element;
@@ -45,21 +58,30 @@ const routes = [
   {
     element: <PrivateLayout />,
     children: [
-      ...Object.values(privateRoutes).map(({ path, component: Component }) => ({
+      ...Object.values(studentRoutes).map(({ path, component: Component }) => ({
         path,
         element: (
-          <ProtectedRoute element={<Component />} requiredLogin={true} />
+          <ProtectedRoute
+            element={<Component />}
+            requiredLogin={true}
+            path={path}
+          />
         ),
       })),
     ],
   },
   {
-    element: <PublicLayout />,
+    element: <PrivateLayout />,
     children: [
-      ...Object.values(publicRoutes).map(({ path, component: Component }) => ({
+      ...Object.values(teacherRoutes).map(({ path, component: Component }) => ({
         path,
         element: (
-          <ProtectedRoute element={<Component />} requiredLogin={false} />
+          <ProtectedRoute
+            element={<Component />}
+            requiredLogin={true}
+            requiredTeacher={true}
+            path={path}
+          />
         ),
       })),
     ],
@@ -74,6 +96,22 @@ const routes = [
             element={<Component />}
             requiredLogin={true}
             requiredAdmin={true}
+            path={path}
+          />
+        ),
+      })),
+    ],
+  },
+  {
+    element: <PublicLayout />,
+    children: [
+      ...Object.values(publicRoutes).map(({ path, component: Component }) => ({
+        path,
+        element: (
+          <ProtectedRoute
+            element={<Component />}
+            requiredLogin={false}
+            path={path}
           />
         ),
       })),

@@ -1,12 +1,10 @@
-import { CreateQuestionRequest } from "@/apis/type";
+import { Question } from "@/apis/type";
 import axiosClient from "@/apis/config/axiosClient";
 
 const questionService = {
-  // Create a new question
-  createQuestion: async (question: CreateQuestionRequest) => {
+  createQuestion: async (question: Question): Promise<Question> => {
     try {
-      console.log(question);
-      const response = await axiosClient.post('/api/questions', question);
+      const response = await axiosClient.post("/api/questions", question);
       return response.data;
     } catch (error) {
       console.error("Error creating question:", error);
@@ -14,10 +12,14 @@ const questionService = {
     }
   },
 
-  // Get all question tags
-  getAllQuestionTags: async (query: { page: number; limit: number } = { page: 0, limit: 100 }) => {
+  getAllQuestionTags: async (query: {
+    page: number;
+    limit: number;
+  } = { page: 0, limit: 100 }) => {
     try {
-      const response = await axiosClient.get('/api/question-tag', { params: query });
+      const response = await axiosClient.get("/api/question-tag", {
+        params: query,
+      });
       return response.data;
     } catch (error) {
       console.error("Error fetching question tags:", error);
@@ -25,10 +27,11 @@ const questionService = {
     }
   },
 
-  // Get all questions
-  getAll: async (query: Record<string, any> = {}) => {
+  getAll: async ({ page, limit }: { page: number; limit: number }) => {
     try {
-      const response = await axiosClient.get('/api/questions', { params: query });
+      const response = await axiosClient.get("/api/questions", {
+        params: { page, limit },
+      });
       return response.data;
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -36,32 +39,30 @@ const questionService = {
     }
   },
 
-  // Get a single question by ID
-  getOne: async (questionId: number) => {
-      const response = await axiosClient.get(`/api/questions/${questionId}`);
-      return response;
-  },
-
-  // Get all questions for admin view
-	getAllAdmin: async (query: any = {}): Promise<any> => {
-    return   await axiosClient.get('/api/questions', { params: query });
-  },
-
-  // Get a single admin question by ID
-  getOneAdmin: async (questionId: string) => {
+  getByCreator: async (
+    creatorId: number,
+    { page, limit }: { page: number; limit: number }
+  ) => {
     try {
-      const response = await axiosClient.get(`/api/question/admin/${questionId}`);
+      const response = await axiosClient.get(`/api/questions/${creatorId}`, {
+        params: { page, limit },
+      });
       return response.data;
     } catch (error) {
-      console.error(`Error fetching admin question with ID ${questionId}:`, error);
+      console.error(`Error fetching questions for creator ${creatorId}:`, error);
       throw error;
     }
   },
 
-  // Update a question
-  updateQuestion: async (questionId: string, question: CreateQuestionRequest) => {
+  updateQuestion: async (
+    questionId: string,
+    question: Partial<Question>
+  ): Promise<Question> => {
     try {
-      const response = await axiosClient.put(`/api/question/${questionId}`, question);
+      const response = await axiosClient.put(
+        `/api/questions/${questionId}`,
+        question
+      );
       return response.data;
     } catch (error) {
       console.error(`Error updating question with ID ${questionId}:`, error);
@@ -69,10 +70,9 @@ const questionService = {
     }
   },
 
-  // Delete (soft delete) a question
-  deleteQuestion: async (questionId: number) => {
+  deleteQuestion: async (questionId: number): Promise<{ message: string }> => {
     try {
-      const response = await axiosClient.delete(`/api/question/soft/${questionId}`);
+      const response = await axiosClient.delete(`/api/questions/${questionId}`);
       return response.data;
     } catch (error) {
       console.error(`Error deleting question with ID ${questionId}:`, error);

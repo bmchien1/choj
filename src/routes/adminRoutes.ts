@@ -1,70 +1,98 @@
-import {
-	CreateQuestionPage,
-	CreateContestPage,
-	EditProblemPage,
-	ListAdminQuestionPage,
-	EditContestPage,
-	ListAdminTagPage,
-	ListAdminContestPage, JoinContestRequestsPage, ListAdminSubmissionPage, SubmissionAdminDetailPage, UserManagementPage, CreateCoursePage ,ListAdminCoursePage, AdminCourseDetail
-} from "@/pages";
+import { AdminContestView, AdminCourseDetail, AdminCourseListPage,AdminJoinCoursesPage,AdminQuestionListPage,AdminSubmission,AdminTagListPage,CreateCoursePage, CreateQuestionPage, CreateTagPage, SubmissionCourse, SubmissionContest, UserListPage } from "@/pages";
 
 const adminRoutes = {
-	createProblem: {
-		path: '/admin/question/create',
-		component: CreateQuestionPage,
-	},
-	createContest: {
-		path: '/admin/contest/create',
-		component: CreateContestPage,
+
+	listUser: {
+		path: '/admin/users',
+		component: UserListPage,
 	},
 	createCourse: {
 		path: '/admin/course/create',
 		component: CreateCoursePage,
 	},
-	editProblem: {
-		path: '/admin/problem/edit/:id',
-		component: EditProblemPage,
-	},
-	listAdminProblem: {
-		path: '/admin/questions',
-		component: ListAdminQuestionPage
-	},
-	editContest: {
-		path: '/admin/contest/edit/:id',
-		component: EditContestPage,
-	},
-	listAdminContest: {
-		path: '/admin/contests',
-		component: ListAdminContestPage
-	},
 	listAdminCourse: {
 		path: '/admin/courses',
-		component: ListAdminCoursePage
+		component: AdminCourseListPage
+	},
+	courseDetail: {
+		path: '/admin/courses/details/:id',
+		component: AdminCourseDetail
+	},
+	
+	createQuestion: {
+		path: '/admin/question/create',
+		component: CreateQuestionPage,
+	},
+	listAdminQuestion: {
+		path: '/admin/questions',
+		component: AdminQuestionListPage
+	},
+
+	createTag: {
+		path: '/admin/tag/create',
+		component: CreateTagPage,
 	},
 	listAdminTag: {
 		path: '/admin/tags',
-		component: ListAdminTagPage
+		component: AdminTagListPage
 	},
-	joinContest:{
-		path: '/admin/join-contest-request',
-		component: JoinContestRequestsPage
+	joinCourse:{
+		path: '/admin/join-course-request',
+		component: AdminJoinCoursesPage
 	},
-	listAdminSubmission: {
-		path: '/admin/submissions',
-		component: ListAdminSubmissionPage
+
+	contest:{
+		path: '/admin/contest',
+		component: AdminContestView
 	},
-	submissionDetailAdmin: {
-		path: '/admin/submission-detail/:id',
-		component: SubmissionAdminDetailPage
+	submission:{
+		path: '/admin/submission',
+		component: AdminSubmission
 	},
-	listUsers: {
-		path: '/admin/users',
-		component: UserManagementPage
+	submissionCourse:{
+		path: '/admin/submission/course/:id',
+		component: SubmissionCourse
 	},
-	courseDetail: {
-		path: '/courses/details/:id',
-		component: AdminCourseDetail
-	}
+	submissionContest:{
+		path: '/admin/submission/contest/:id',
+		component: SubmissionContest
+	},
+	// createContest: {
+	// 	path: '/admin/contest/create',
+	// 	component: CreateContestPage,
+	// },
+	// editProblem: {
+	// 	path: '/admin/problem/edit/:id',
+	// 	component: EditProblemPage,
+	// },
+	// listAdminProblem: {
+	// 	path: '/admin/questions',
+	// 	component: ListAdminQuestionPage
+	// },
+	// editContest: {
+	// 	path: '/admin/contest/edit/:id',
+	// 	component: EditContestPage,
+	// },
+	// listAdminContest: {
+	// 	path: '/admin/contests',
+	// 	component: ListAdminContestPage
+	// },
+	// listAdminTag: {
+	// 	path: '/admin/tags',
+	// 	component: ListAdminTagPage
+	// },
+	// listAdminSubmission: {
+	// 	path: '/admin/submissions',
+	// 	component: ListAdminSubmissionPage
+	// },
+	// submissionDetailAdmin: {
+	// 	path: '/admin/submission-detail/:id',
+	// 	component: SubmissionAdminDetailPage
+	// },
+	// listUsers: {
+	// 	path: '/admin/users',
+	// 	component: UserManagementPage
+	// },
 }
 
 export default adminRoutes;

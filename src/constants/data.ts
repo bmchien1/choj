@@ -1,4 +1,4 @@
-export const JWT_LOCAL_STORAGE_KEY = 'agh-jwt-token'
+export const JWT_LOCAL_STORAGE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJtaW5obmd1eWVuQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0NDQ3MTE0NCwiZXhwIjoxNzQ0NDc0NzQ0fQ.9pk4PAaqr-xZqbyQFUBHmpp6WyZI52iE1IcCfzETYLQ'
 
 export const LIST_LANGUAGE = [
 	{
