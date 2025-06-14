@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useContestQueries } from '../hooks/useContestQueries';
-import { Contest, CreateContestData } from '../apis/type';
+import {  CreateContestData } from '../apis/type';
 import { Button, Card, Modal, Input, Typography, Space, Row, Col, DatePicker, Tabs, Form, Switch, message, InputNumber, Table, Select, Divider } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, CopyOutlined, SaveOutlined } from '@ant-design/icons';
+import {  DeleteOutlined, CopyOutlined, SaveOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import { useGetQuestionsByCreator } from '../hooks/useQuestionQueries';
 import { useGetMatricesByUser } from '../hooks/useMatrixQueries';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text,  } = Typography;
 const { TextArea } = Input;
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -34,11 +34,7 @@ export const ContestDetail: React.FC = () => {
 
     // --- Question Tab State ---
     const [questionMode, setQuestionMode] = useState<'manual' | 'matrix'>('manual');
-    const [selectedQuestions, setSelectedQuestions] = useState<any[]>([]);
-    const [questionPoints, setQuestionPoints] = useState<{ [key: number]: number }>({});
     const [selectedMatrixId, setSelectedMatrixId] = useState<string | null>(null);
-    const [isMatrixValid, setIsMatrixValid] = useState(false);
-    const [matrixCheckMsg, setMatrixCheckMsg] = useState<string>('');
     const userId = user?.id;
     const { data: allQuestions = [], isLoading: isQuestionsLoading } = useGetQuestionsByCreator(userId);
     const { data: matrices = [], isLoading: isMatricesLoading } = useGetMatricesByUser(userId);

@@ -53,7 +53,7 @@ export const useUpdateMatrix = () => {
     { matrixId: string; data: Partial<MatrixCreate> }
   >({
     mutationFn: ({ matrixId, data }) => matrixService.update(matrixId, data),
-    onSuccess: (updatedMatrix, { matrixId }) => {
+    onSuccess: (_updatedMatrix, { matrixId }) => {
       queryClient.invalidateQueries({ queryKey: ["matrices"] });
       queryClient.invalidateQueries({ queryKey: ["matrix", matrixId] });
       toast.success("Matrix updated successfully");

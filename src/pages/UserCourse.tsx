@@ -1,8 +1,7 @@
-import { Card, Spin, Typography, Row, Col, Space, Button } from "antd";
+import { Card, Typography, Row, Col, Space, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { CalendarOutlined, TeamOutlined } from "@ant-design/icons";
 import { useGetUserCourses } from "@/hooks/useUserCourseQueries";
-import { Course } from "@/apis/type";
 
 const { Title, Text, Paragraph } = Typography;
 

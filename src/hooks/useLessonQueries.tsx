@@ -42,7 +42,7 @@ export const useUpdateLesson = () => {
     { lessonId: string; data: Partial<Lesson> }
   >({
     mutationFn: ({ lessonId, data }) => lessonService.update(lessonId, data),
-    onSuccess: (updatedLesson, { lessonId }) => {
+    onSuccess: (_updatedLesson, { lessonId }) => {
       queryClient.invalidateQueries({ queryKey: ["lessons"] });
       queryClient.invalidateQueries({ queryKey: ["lesson", lessonId] });
       queryClient.invalidateQueries({ queryKey: ["courseContent"] });

@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import { Card, Button, Spin, Modal, Typography, Row, Col, Space } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Card, Button, Modal, Typography, Row, Col, Space } from "antd";
 import { CalendarOutlined, TeamOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import {
@@ -25,7 +24,6 @@ interface CourseTableData {
 }
 
 const AllCourseList = () => {
-  const navigate = useNavigate();
   const { data, isLoading } = useGetAllCourses();
   const listCourses: Course[] = data?.courses || [];
   const [isLoadingData, setIsLoadingData] = useState<{ id: number | null; loading: boolean }>({
@@ -33,15 +31,15 @@ const AllCourseList = () => {
     loading: false,
   });
 
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedCourse, ] = useState<Course | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
   const userId = user.id;
 
-  const { data: listUserInCourseData = [], refetch: refetchUserInCourse } = useGetUserCourses(userId);
+  const { data: listUserInCourseData = [],  } = useGetUserCourses(userId);
   const { data: listRequestsData = [], refetch: refetchRequest } = useGetJoinCourseRequestsByUser(userId);
-  const { mutate: joinCourse, isPending: isJoining } = useJoinCourse();
+  const { mutate: joinCourse,  } = useJoinCourse();
 
   const listCoursesTableData = useMemo((): CourseTableData[] => {
     return listCourses.map((course: Course) => ({

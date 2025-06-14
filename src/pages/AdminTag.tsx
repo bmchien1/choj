@@ -7,7 +7,7 @@ import { useGetAllTags, useDeleteTag, useCreateTag } from "@/hooks/useTagQueries
 import toast from "react-hot-toast";
 import { useState } from "react";
 
-const { Title, Text } = Typography;
+const { Title,  } = Typography;
 
 const ListAdminTag = () => {
   const navigate = useNavigate();

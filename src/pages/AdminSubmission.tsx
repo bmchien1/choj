@@ -2,7 +2,6 @@ import React from 'react';
 import { useGetAllSubmissions } from '../hooks/useSubmissionQueries';
 import { Table, Typography, Space, Input } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { Submission } from '../apis/type';
 
 const { Title, Text } = Typography;
 

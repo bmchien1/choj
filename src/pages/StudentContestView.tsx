@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useContestQueries } from '../hooks/useContestQueries';
 import { Contest } from '../apis/type';
-import { Card, Typography, Button, Modal, Input, Space, Row, Col } from 'antd';
+import { Card, Typography, Button, Modal, Space, Row, Col } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text, Paragraph } = Typography;
 
 export const StudentContestView: React.FC = () => {
-    const { publicContests, getContestById } = useContestQueries();
+    const { publicContests,  } = useContestQueries();
     const navigate = useNavigate();
     const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
     const [selectedContest, setSelectedContest] = useState<Contest | null>(null);

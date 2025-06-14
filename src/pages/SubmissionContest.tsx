@@ -2,7 +2,6 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetSubmissionsByContest } from '../hooks/useSubmissionQueries';
 import { Table, Typography, Space } from 'antd';
-import { Submission } from '../apis/type';
 
 const { Title, Text } = Typography;
 

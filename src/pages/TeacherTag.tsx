@@ -1,4 +1,4 @@
-import { Flex, Popconfirm, Table, Tag as AntTag, Button, Modal, Form, Input, Typography, Space } from "antd";
+import { Flex, Popconfirm, Table, Button, Modal, Form, Input, Typography, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import { HiPencilAlt } from "react-icons/hi";
 import { BiTrash } from "react-icons/bi";
@@ -7,7 +7,7 @@ import { useGetTagsByCreator, useDeleteTag, useCreateTag } from "@/hooks/useTagQ
 import toast from "react-hot-toast";
 import { useState } from "react";
 
-const { Title, Text } = Typography;
+const { Title,  } = Typography;
 
 const ListTeacherTag = () => {
   const navigate = useNavigate();

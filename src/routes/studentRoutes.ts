@@ -1,7 +1,5 @@
 import {
 	AllCourseListPage,
-	HomePage,
-	ViewLesson,
 	// UserContestListPage,
 	// // ContestListPage,
 	// // UserProblemListPage,

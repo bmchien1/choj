@@ -112,7 +112,7 @@ export const useUpdateAssignment = () => {
   >({
     mutationFn: ({ assignmentId, data }) =>
       assignmentService.update(assignmentId, data),
-    onSuccess: (updatedAssignment, { assignmentId }) => {
+    onSuccess: (_updatedAssignment, { assignmentId }) => {
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
       queryClient.invalidateQueries({ queryKey: ["assignment", assignmentId] });
       queryClient.invalidateQueries({ queryKey: ["courseContent"] });

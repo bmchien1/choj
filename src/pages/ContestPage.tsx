@@ -13,9 +13,6 @@ import {
     Space,
     Alert,
     Spin,
-    Row,
-    Col,
-    Divider,
     Modal,
     Tooltip,
     Select,
@@ -30,7 +27,7 @@ import 'ace-builds/src-noconflict/mode-java';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'ace-builds/src-noconflict/theme-dracula';
-import { ArrowLeftOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -55,7 +52,7 @@ export const ContestPage: React.FC = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
     const contestId = parseInt(id || '0');
-    const { getContestById, submitContestAnswers } = useContestQueries();
+    const { getContestById } = useContestQueries();
     const { mutate: createSubmission, isPending: isSubmitting } = useCreateSubmission();
     const { mutate: buildCode, isPending: isBuilding } = useBuildCode();
     const contestQuery = getContestById(contestId);
@@ -509,16 +506,16 @@ export const ContestPage: React.FC = () => {
     };
 
     // Parse gradingResults.results safely before return
-    let parsedResults: any[] = [];
-    if (gradingResults && gradingResults.results) {
-        try {
-            parsedResults = Array.isArray(gradingResults.results)
-                ? gradingResults.results
-                : JSON.parse(gradingResults.results);
-        } catch {
-            parsedResults = [];
-        }
-    }
+    // let parsedResults: any[] = [];
+    // if (gradingResults && gradingResults.results) {
+    //     try {
+    //         parsedResults = Array.isArray(gradingResults.results)
+    //             ? gradingResults.results
+    //             : JSON.parse(gradingResults.results);
+    //     } catch {
+    //         parsedResults = [];
+    //     }
+    // }
 
     return (
         <div style={{ padding: 24, background: '#fff', minHeight: '100vh', position: 'relative' }}>

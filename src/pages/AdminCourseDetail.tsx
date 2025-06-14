@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Button,
   Modal,
@@ -20,10 +20,9 @@ import {
   useGetCourseContent,
   useGetCourseById,
 } from "@/hooks/useCourseQueries";
-import { useCreateLesson, useUpdateLesson, useUpdateLessonOrder } from "@/hooks/useLessonQueries";
+import { useCreateLesson, useUpdateLessonOrder } from "@/hooks/useLessonQueries";
 import {
   useCreateAssignment,
-  useUpdateAssignment,
   useCheckMatrixAssignment,
   useCreateAssignmentFromMatrix,
   useUpdateAssignmentOrder,
@@ -31,13 +30,11 @@ import {
 import {
   useGetChaptersByCourse,
   useCreateChapter,
-  useUpdateChapter,
   useDeleteChapter,
 } from "@/hooks/useChapterQueries";
 import { useGetQuestionsByCreator } from "@/hooks/useQuestionQueries";
 import { useGetMatricesByUser } from "@/hooks/useMatrixQueries";
 import {
-  Assignment,
   AssignmentCreate,
   Lesson,
   QuestionTable,
@@ -45,13 +42,7 @@ import {
   Matrix,
   Chapter,
 } from "@/apis/type";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "react-beautiful-dnd";
-import { DragOutlined, PlusOutlined, DeleteOutlined, BookOutlined, FileDoneOutlined, ArrowUpOutlined, ArrowDownOutlined, EditOutlined } from "@ant-design/icons";
+import {  PlusOutlined, DeleteOutlined, BookOutlined, FileDoneOutlined, ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import { useQueryClient } from "@tanstack/react-query";
 
 const { Text, Title } = Typography;
@@ -84,7 +75,7 @@ const AdminCourseDetail = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const [selectedQuestions, setSelectedQuestions] = useState<Array<QuestionTable & { points?: number }>>([]);
-  const [questionPoints, setQuestionPoints] = useState<{ [key: number]: number }>({});
+  const [, setQuestionPoints] = useState<{ [key: number]: number }>({});
   const [useMatrix, setUseMatrix] = useState(false);
   const [selectedMatrixId, setSelectedMatrixId] = useState<string | null>(null);
   const [isMatrixValid, setIsMatrixValid] = useState(false);
@@ -116,10 +107,7 @@ const AdminCourseDetail = () => {
   const createAssignmentMutation = useCreateAssignment();
   const createAssignmentFromMatrixMutation = useCreateAssignmentFromMatrix();
   const checkMatrixAssignmentMutation = useCheckMatrixAssignment();
-  const updateLessonMutation = useUpdateLesson();
-  const updateAssignmentMutation = useUpdateAssignment();
   const createChapterMutation = useCreateChapter();
-  const updateChapterMutation = useUpdateChapter();
   const deleteChapterMutation = useDeleteChapter();
   const updateLessonOrderMutation = useUpdateLessonOrder();
   const updateAssignmentOrderMutation = useUpdateAssignmentOrder();

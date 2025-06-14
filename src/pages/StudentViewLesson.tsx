@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Spin, Typography, Button, Input, Space } from "antd";
 import { useGetLessonById } from "@/hooks/useLessonQueries";
-import { LessonView, LessonType } from "@/apis/type";
+import { LessonType } from "@/apis/type";
 import toast from "react-hot-toast";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -102,7 +102,7 @@ const StudentViewLesson: React.FC = () => {
                       theme: "dracula",
                       lineNumbers: true,
                     }}
-                    onBeforeChange={(editor, data, value) => {
+                    onBeforeChange={(value) => {
                       handleCodeChange(index, value);
                     }}
                   />

@@ -5,11 +5,10 @@ import { BiTrash } from "react-icons/bi";
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import { useGetMatricesByUser, useDeleteMatrix, useCreateMatrix } from "@/hooks/useMatrixQueries";
 import { useGetAllTags } from "@/hooks/useTagQueries";
-import { useGetAllQuestions } from "@/hooks/useQuestionQueries";
 import toast from "react-hot-toast";
 import { useState } from "react";
 
-const { Title, Text } = Typography;
+const { Title,  } = Typography;
 const { Option } = Select;
 
 const ListTeacherMatrix = () => {
@@ -18,7 +17,6 @@ const ListTeacherMatrix = () => {
   const creatorId = user.id;
   const { data: listMatrices = [], isLoading } = useGetMatricesByUser(creatorId);
   const { data: tags = [] } = useGetAllTags();
-  const { data: questions = [] } = useGetAllQuestions();
   const deleteMatrix = useDeleteMatrix();
   const createMatrix = useCreateMatrix();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -48,7 +46,7 @@ const ListTeacherMatrix = () => {
     }
   };
 
-  const validatePercentages = (_: any, value: number) => {
+  const validatePercentages = (_: any) => {
     const criteria = form.getFieldValue('criteria');
     const total = criteria.reduce((sum: number, item: any) => sum + (item.percentage || 0), 0);
     if (total > 100) {

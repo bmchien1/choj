@@ -1,5 +1,5 @@
 import axiosClient from "@/apis/config/axiosClient";
-import { LoginResponse, RegisterResponse, User, UserRole, LoginCredentials } from "@/apis/type";
+import { LoginResponse, User, UserRole, LoginCredentials } from "@/apis/type";
 
 const userService = {
   login: async (data: LoginCredentials): Promise<LoginResponse> => {

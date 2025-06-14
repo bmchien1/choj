@@ -1,4 +1,4 @@
-import { AdminCourseDetail, CreateCoursePage, CreateMatrixPage, CreateQuestionPage, CreateTagPage, HomePage, SubmissionContest, SubmissionCourse, TeacherContestView, TeacherCourseListPage, TeacherJoinCoursesPage, TeacherMatrixListPage, TeacherQuestionListPage, TeacherTagListPage, UserListPage } from '@/pages';
+import { AdminCourseDetail, CreateCoursePage, CreateMatrixPage, CreateQuestionPage, CreateTagPage, SubmissionContest, SubmissionCourse, TeacherContestView, TeacherCourseListPage, TeacherJoinCoursesPage, TeacherMatrixListPage, TeacherQuestionListPage, TeacherTagListPage } from '@/pages';
 import { ContestDetail } from '@/pages/ContestDetail';
   
   const teacherRoutes = {

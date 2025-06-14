@@ -41,7 +41,7 @@ export const useUpdateChapter = () => {
     { chapterId: string; data: Partial<Chapter> }
   >({
     mutationFn: ({ chapterId, data }) => chapterService.update(chapterId, data),
-    onSuccess: (updatedChapter, { chapterId }) => {
+    onSuccess: (_updatedChapter, { chapterId }) => {
       queryClient.invalidateQueries({ queryKey: ["chapters"] });
       queryClient.invalidateQueries({ queryKey: ["chapter", chapterId] });
       toast.success("Chapter updated successfully");

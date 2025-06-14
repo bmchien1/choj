@@ -5,8 +5,6 @@ import {
   Submission,
   SubmissionCreate,
   SubmissionQuery,
-  SubmissionAdminParams,
-  SubmissionAdminResponse,
   AssignmentSubmission,
   GradingResult,
   BuildResponse,

@@ -1,58 +1,35 @@
-import { Card, Modal, Form, Input, Button, Typography, Table, Space } from "antd";
+import { Button, Form, Input, Modal, Table, Typography, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import { HiPencilAlt } from "react-icons/hi";
 import { BiTrash } from "react-icons/bi";
-import { PlusOutlined } from "@ant-design/icons";
-import toast from "react-hot-toast";
-import {
-  useGetAllCourses,
-  useDeleteCourse,
-  useCreateCourse,
-  useUpdateCourse,
-} from "@/hooks/useCourseQueries";
+import { PlusOutlined, EyeOutlined, FileTextOutlined } from "@ant-design/icons";
+import { useGetAllCourses, useDeleteCourse, useCreateCourse, useUpdateCourse } from "@/hooks/useCourseQueries";
 import { Course } from "@/apis/type";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import courseService from "@/apis/service/courseService";
+import toast from "react-hot-toast";
 
 const { Title, Text, Paragraph } = Typography;
 
 const ListAdminCourse = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { data: listCourses = [], isLoading } = useGetAllCourses();
-  const deleteCourseMutation = useDeleteCourse();
-  const createCourseMutation = useCreateCourse();
-  const updateCourseMutation = useUpdateCourse();
   const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const { data: listCourses = [], isLoading } = useGetAllCourses();
+  const courses = Array.isArray(listCourses) ? listCourses : listCourses.courses || [];
+  const deleteCourse = useDeleteCourse();
+  const createCourse = useCreateCourse();
+  const updateCourse = useUpdateCourse();
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [modalState, setModalState] = useState<{
     type: "edit" | "delete" | null;
     course: Course | null;
   }>({ type: null, course: null });
-  const [searchParams, setSearchParams] = useState({
-    page: 0,
-    limit: 10,
-    name: "",
-  });
-
-  const { mutate: deleteCourse } = useMutation({
-    mutationFn: (id: string) => courseService.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["courses"] });
-      toast.success("Course deleted successfully");
-    },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to delete course");
-    },
-  });
 
   const handleDeleteCourse = (id: number) => {
-    deleteCourse(id.toString(), {
+    deleteCourse.mutate(id.toString(), {
       onSuccess: () => {
         toast.success("Course deleted successfully");
+        setModalState({ type: null, course: null });
       },
       onError: () => {
         toast.error("Failed to delete course");
@@ -70,7 +47,7 @@ const ListAdminCourse = () => {
       subject: values.subject,
     };
 
-    updateCourseMutation.mutate(
+    updateCourse.mutate(
       { courseId: modalState.course.id.toString(), data: courseData },
       {
         onSuccess: () => {
@@ -99,16 +76,9 @@ const ListAdminCourse = () => {
         creatorId: user.id,
       };
 
-      createCourseMutation.mutate(courseData, {
-        onSuccess: () => {
-          form.resetFields();
-          setShowCreateForm(false);
-          toast.success("Course created successfully");
-        },
-        onError: (error: any) => {
-          toast.error(error.message || "Failed to create course");
-        },
-      });
+      await createCourse.mutateAsync(courseData);
+      form.resetFields();
+      toast.success("Course created successfully");
     } catch (error: any) {
       toast.error(error.message || "Failed to create course");
     }
@@ -155,70 +125,46 @@ const ListAdminCourse = () => {
             icon={<BiTrash size={20} />}
             onClick={() => setModalState({ type: "delete", course: record })}
           />
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/admin/courses/details/${record.id}`)}
+          />
+          <Button
+            type="text"
+            icon={<FileTextOutlined />}
+            onClick={() => navigate(`/admin/submission/course/${record.id}`)}
+          />
         </Space>
       ),
     },
   ];
 
-  const filteredCourses = Array.isArray(listCourses) ? [] : (listCourses.courses?.filter((course: any) =>
-    course.name.toLowerCase().includes(searchParams.name.toLowerCase())
-  ) || []);
-
-  const paginatedCourses = filteredCourses.slice(
-    searchParams.page * searchParams.limit,
-    (searchParams.page + 1) * searchParams.limit
-  );
-
   if (isLoading) return <div style={{ padding: 24 }}><Text>Loading...</Text></div>;
 
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
-      <Space direction="vertical" size="large" style={{ width: '100%', marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} align="center">
         <Title level={2} style={{ margin: 0, color: '#ff6a00' }}>Courses Management</Title>
-        <Space>
-          <Input
-            placeholder="Search by name"
-            value={searchParams.name}
-            onChange={(e) =>
-              setSearchParams((prev) => ({
-                ...prev,
-                name: e.target.value,
-                page: 0,
-              }))
-            }
-            style={{ width: 200 }}
-          />
-          <Button
-            type="primary"
-            onClick={() => navigate("/admin/courses/create")}
-            style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
-          >
-            Create Course
-          </Button>
-        </Space>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setModalState({ type: "edit", course: null })}
+          style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+        >
+          Create New Course
+        </Button>
       </Space>
 
       <Table
         columns={columns}
-        dataSource={paginatedCourses}
-        loading={isLoading}
+        dataSource={courses}
         rowKey="id"
         style={{ background: '#fff' }}
-        pagination={{
-          current: searchParams.page + 1,
-          total: filteredCourses.length,
-          pageSize: searchParams.limit,
-          onChange: (page) => {
-            setSearchParams((prev) => ({
-              ...prev,
-              page: page - 1,
-            }));
-          },
-        }}
       />
 
       <Modal
-        title={<span style={{ color: '#ff6a00' }}>{modalState.type === "edit" ? "Edit Course" : "Confirm Delete"}</span>}
+        title={<span style={{ color: '#ff6a00' }}>{modalState.type === "edit" ? (modalState.course ? "Edit Course" : "Create New Course") : "Confirm Delete"}</span>}
         open={!!modalState.type}
         onCancel={() => {
           setModalState({ type: null, course: null });
@@ -227,40 +173,48 @@ const ListAdminCourse = () => {
         footer={null}
       >
         {modalState.type === "edit" && (
-          <Form form={editForm} layout="vertical" onFinish={handleEditCourse}>
+          <Form
+            form={modalState.course ? editForm : form}
+            layout="vertical"
+            onFinish={modalState.course ? handleEditCourse : onCreateFinish}
+          >
             <Form.Item
               name="name"
               label="Course Name"
               rules={[{ required: true, message: "Please enter the course name" }]}
             >
-              <Input />
+              <Input placeholder="Enter course name" />
             </Form.Item>
             <Form.Item
               name="class"
               label="Class"
               rules={[{ required: true, message: "Please enter the class" }]}
             >
-              <Input />
+              <Input placeholder="Enter class" />
             </Form.Item>
             <Form.Item
               name="subject"
               label="Subject"
               rules={[{ required: true, message: "Please enter the subject" }]}
             >
-              <Input />
+              <Input placeholder="Enter subject" />
             </Form.Item>
-            <Form.Item name="description" label="Description">
-              <Input.TextArea rows={4} />
+            <Form.Item
+              name="description"
+              label="Description"
+              rules={[{ required: true, message: "Please enter the description" }]}
+            >
+              <Input.TextArea rows={4} placeholder="Enter course description" />
             </Form.Item>
             <Form.Item>
               <Button
                 type="primary"
                 htmlType="submit"
-                loading={updateCourseMutation.isPending}
+                loading={modalState.course ? updateCourse.isPending : createCourse.isPending}
                 style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
                 className="mr-2"
               >
-                Update Course
+                {modalState.course ? "Update Course" : "Create Course"}
               </Button>
               <Button
                 onClick={() => {
@@ -292,7 +246,7 @@ const ListAdminCourse = () => {
                   modalState.course?.id &&
                   handleDeleteCourse(modalState.course.id)
                 }
-                loading={deleteCourseMutation.isPending}
+                loading={deleteCourse.isPending}
               >
                 Delete
               </Button>

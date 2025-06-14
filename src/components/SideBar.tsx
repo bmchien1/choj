@@ -11,8 +11,6 @@ import {
   AppstoreOutlined,
   TagOutlined,
   TrophyOutlined,
-  RightOutlined,
-  DownOutlined,
   BookOutlined,
   FileTextOutlined,
   UserOutlined,

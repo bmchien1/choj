@@ -10,7 +10,6 @@ import {
   Form,
   Select,
   Modal,
-  Tooltip,
   Space,
   Affix,
   Menu,
@@ -21,10 +20,8 @@ import {
   useCreateAssignmentSubmission,
   useBuildCode,
 } from "@/hooks/useSubmissionQueries";
-import { Question, GradingResult } from "@/apis/type";
+import { GradingResult } from "@/apis/type";
 import toast from "react-hot-toast";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-python";
@@ -38,7 +35,6 @@ import {
   ArrowLeftOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
-import type { MenuProps } from "antd";
 
 ace.config.set("basePath", "/node_modules/ace-builds/src-noconflict");
 
@@ -91,7 +87,6 @@ const StudentAssignment: React.FC = () => {
       } else {
         // First time starting the assignment
         const now = Date.now();
-        const endTime = now + assignment.duration * 60 * 1000;
         const initialTime = assignment.duration * 60;
         setTimeLeft(initialTime);
         setStartTime(now);
@@ -266,211 +261,6 @@ const StudentAssignment: React.FC = () => {
     );
   }
 
-  const renderQuestion = (question: Question, index: number) => {
-    if (question.questionType === "true-false") return null;
-    if (!question.id) return null;
-
-    const questionIdStr = question.id.toString();
-
-    switch (question.questionType) {
-      case "multiple-choice":
-        return (
-          <Card
-            key={questionIdStr}
-            id={`question-${question.id}`}
-            bordered={false}
-            style={{ marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
-            title={
-              <div className="flex items-center space-x-2">
-                <CheckSquareOutlined style={{ color: '#ff6a00' }} />
-                <span style={{ color: '#ff6a00' }}>Question {index + 1}</span>
-              </div>
-            }
-          >
-            <Paragraph style={{ fontSize: '16px', marginBottom: 16 }}>
-              {question.question}
-            </Paragraph>
-            <Form.Item
-              name={`question-${question.id}`}
-              rules={[{ required: true, message: "Please select an answer" }]}
-            >
-              <Radio.Group className="space-y-2">
-                {question.choices && Array.isArray(question.choices) ? (
-                  question.choices.map(
-                    (choice: { choice: string }, idx: number) => (
-                      <Radio key={idx} value={choice.choice} className="block">
-                        {choice.choice}
-                      </Radio>
-                    )
-                  )
-                ) : (
-                  <Paragraph className="text-gray-500">
-                    No choices available
-                  </Paragraph>
-                )}
-              </Radio.Group>
-            </Form.Item>
-          </Card>
-        );
-      case "short-answer":
-        return (
-          <Card
-            key={questionIdStr}
-            id={`question-${question.id}`}
-            bordered={false}
-            style={{ marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
-            title={
-              <div className="flex items-center space-x-2">
-                <EditOutlined style={{ color: '#ff6a00' }} />
-                <span style={{ color: '#ff6a00' }}>Question {index + 1}</span>
-              </div>
-            }
-          >
-            <Paragraph style={{ fontSize: '16px', marginBottom: 16 }}>
-              {question.question}
-            </Paragraph>
-            <Form.Item
-              name={`question-${question.id}`}
-              rules={[{ required: true, message: "Please provide an answer" }]}
-            >
-              <Input.TextArea
-                rows={4}
-                placeholder="Enter your answer here..."
-                style={{ borderColor: '#ff6a00' }}
-              />
-            </Form.Item>
-          </Card>
-        );
-      case "coding":
-        return (
-          <Card
-            key={questionIdStr}
-            id={`question-${question.id}`}
-            bordered={false}
-            style={{ marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
-            title={
-              <div className="flex items-center space-x-2">
-                <CodeOutlined style={{ color: '#ff6a00' }} />
-                <span style={{ color: '#ff6a00' }}>Question {index + 1}</span>
-              </div>
-            }
-          >
-            <Paragraph style={{ fontSize: '16px', marginBottom: 16 }}>
-              {question.question}
-            </Paragraph>
-            <div className="space-y-4">
-              <Space>
-                <Paragraph style={{ margin: 0 }}>
-                  Time Limit: {question.cpuTimeLimit}s
-                </Paragraph>
-                <Paragraph style={{ margin: 0 }}>
-                  Memory Limit: {question.memoryLimit}MB
-                </Paragraph>
-              </Space>
-              <Form.Item
-                name={`question-${question.id}`}
-                rules={[
-                  { required: true, message: "Please provide a solution" },
-                ]}
-              >
-                <div className="space-y-4">
-                  <Select
-                    defaultValue={question.language || "javascript"}
-                    style={{ width: 120, borderColor: '#ff6a00' }}
-                    onChange={(value) =>
-                      setSelectedLanguages((prev) => ({
-                        ...prev,
-                        [questionIdStr]: value,
-                      }))
-                    }
-                  >
-                    <Option value="java">Java</Option>
-                    <Option value="python">Python</Option>
-                    <Option value="c_cpp">C/C++</Option>
-                  </Select>
-                  <AceEditor
-                    mode={
-                      selectedLanguages[questionIdStr] ||
-                      question.language ||
-                      "javascript"
-                    }
-                    theme="dracula"
-                    name={`editor-${questionIdStr}`}
-                    width="100%"
-                    height="300px"
-                    defaultValue={question.templateCode || ""}
-                    setOptions={{
-                      useWorker: false,
-                      showLineNumbers: true,
-                      tabSize: 2,
-                    }}
-                    className="rounded-md border border-gray-300"
-                    onChange={(value) => {
-                      setEditorCodes((prev) => ({
-                        ...prev,
-                        [questionIdStr]: value,
-                      }));
-                      form.setFieldsValue({
-                        [`question-${question.id}`]: value,
-                      });
-                    }}
-                  />
-                  <Input.TextArea
-                    rows={2}
-                    placeholder="Enter custom input for testing..."
-                    style={{ borderColor: '#ff6a00' }}
-                    id={`input-${questionIdStr}`}
-                    onChange={(e) =>
-                      setBuildResults((prev) => ({
-                        ...prev,
-                        [questionIdStr]: "",
-                      }))
-                    }
-                  />
-                  <Tooltip title="Run your code with the provided input">
-                    <Button
-                      type="primary"
-                      loading={isBuilding}
-                      onClick={() => {
-                        const code =
-                          editorCodes[questionIdStr] ||
-                          form.getFieldValue(`question-${question.id}`);
-                        const input =
-                          (
-                            document.getElementById(
-                              `input-${questionIdStr}`
-                            ) as HTMLTextAreaElement
-                          )?.value || "";
-                        handleBuild(
-                          questionIdStr,
-                          code,
-                          input,
-                          selectedLanguages[questionIdStr] ||
-                            question.language ||
-                            "javascript"
-                        );
-                      }}
-                      style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
-                    >
-                      Build & Run
-                    </Button>
-                  </Tooltip>
-                  {buildResults[questionIdStr] && (
-                    <Card bordered={false} style={{ background: '#1e1e1e' }}>
-                      <pre style={{ color: '#fff', margin: 0 }}>
-                        {buildResults[questionIdStr]}
-                      </pre>
-                    </Card>
-                  )}
-                </div>
-              </Form.Item>
-            </div>
-          </Card>
-        );
-      default:
-        return null;
-    }
-  };
 
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh', position: 'relative' }}>
@@ -641,7 +431,7 @@ const StudentAssignment: React.FC = () => {
                             placeholder="Enter custom input for testing..."
                             style={{ borderColor: '#ff6a00' }}
                             id={`input-${question.id}`}
-                            onChange={(e) =>
+                            onChange={() =>
                               setBuildResults((prev) => ({
                                 ...prev,
                                 [question.id!.toString()]: "",
