@@ -428,7 +428,7 @@ const StudentAssignment: React.FC = () => {
                       >
                         <div className="space-y-4">
                           <Select
-                            defaultValue={question.language || "c_cpp"}
+                            defaultValue={question.language || "cpp"}
                             style={{ width: 120, borderColor: '#ff6a00' }}
                             onChange={(value) =>
                               setSelectedLanguages((prev) => ({

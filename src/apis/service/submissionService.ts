@@ -45,9 +45,20 @@ const submissionService = {
   },
 
   build: async (data: BuildRequest): Promise<BuildResponse> => {
-    return await axiosClient
-      .post("/api/submissions/build", data)
-      .then((res) => res.data);
+    try {
+      console.log('Building code with data:', data);
+      const response = await axiosClient.post("/api/submissions/build", data, {
+        timeout: 30000, // 30 seconds timeout
+      });
+      console.log('Build response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Build error:', error.response?.data || error);
+      if (error.code === 'ECONNABORTED') {
+        throw new Error("Build request timed out. Please try again.");
+      }
+      throw new Error(error.response?.data?.message || error.message || "Failed to build code");
+    }
   },
 
   getByAssignment: async (assignmentId: number): Promise<Submission[]> => {
