@@ -13,6 +13,8 @@ import {
   Space,
   Collapse,
   Tooltip,
+  Tag,
+  Radio,
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -31,15 +33,16 @@ import {
   useGetChaptersByCourse,
   useCreateChapter,
   useDeleteChapter,
+  useUpdateChapterOrder,
 } from "@/hooks/useChapterQueries";
 import { useGetQuestionsByCreator } from "@/hooks/useQuestionQueries";
 import { useGetMatricesByUser } from "@/hooks/useMatrixQueries";
+import { useGetAllTags } from "@/hooks/useTagQueries";
 import {
   AssignmentCreate,
   Lesson,
   QuestionTable,
   LessonType,
-  Matrix,
   Chapter,
 } from "@/apis/type";
 import {  PlusOutlined, DeleteOutlined, BookOutlined, FileDoneOutlined, ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
@@ -81,6 +84,16 @@ const AdminCourseDetail = () => {
   const [isMatrixValid, setIsMatrixValid] = useState(false);
   const [sections, setSections] = useState<LessonSection[]>([]);
   const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState<string>();
+  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend'>();
+  const [filters, setFilters] = useState<{
+    difficulty_level?: string;
+    questionType?: string;
+    tags?: number[];
+  }>({});
 
   const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
   const creatorId = user.id;
@@ -100,8 +113,18 @@ const AdminCourseDetail = () => {
   const { data: course, isLoading: isCourseLoading } = useGetCourseById(id);
   const { data: chapters = [], isLoading: isChaptersLoading } = useGetChaptersByCourse(id);
   const { data: courseContent = [], isLoading: isContentLoading } = useGetCourseContent(id);
-  const { data: allQuestions = [], isLoading: isQuestionsLoading } = useGetQuestionsByCreator(creatorId);
-  const { data: matrices = [], isLoading: isMatricesLoading } = useGetMatricesByUser(creatorId);
+  const { data: paginatedQuestions, isLoading: isQuestionsLoading } = useGetQuestionsByCreator(creatorId, {
+    page,
+    limit,
+    search: search,
+    sortField,
+    sortOrder,
+    difficulty: filters.difficulty_level,
+    type: filters.questionType,
+    tags: filters.tags
+  });
+  const { data: matrices = { matrices: [], pagination: {} }, isLoading: isMatricesLoading } = useGetMatricesByUser(creatorId);
+  const { data: tags = { tags: [], pagination: { total: 0 } } } = useGetAllTags();
   
   const createLessonMutation = useCreateLesson();
   const createAssignmentMutation = useCreateAssignment();
@@ -111,6 +134,7 @@ const AdminCourseDetail = () => {
   const deleteChapterMutation = useDeleteChapter();
   const updateLessonOrderMutation = useUpdateLessonOrder();
   const updateAssignmentOrderMutation = useUpdateAssignmentOrder();
+  const updateChapterOrderMutation = useUpdateChapterOrder();
 
   useEffect(() => {
     console.log("courseContent:", courseContent);
@@ -145,24 +169,6 @@ const AdminCourseDetail = () => {
     }));
   };
 
-  const handleAddSection = () => {
-    setSections([...sections, { type: "theory", title: "" }]);
-  };
-
-  const handleRemoveSection = (index: number) => {
-    setSections(sections.filter((_, i) => i !== index));
-  };
-
-  const handleSectionChange = (
-    index: number,
-    field: keyof LessonSection,
-    value: any
-  ) => {
-    const newSections = [...sections];
-    newSections[index] = { ...newSections[index], [field]: value };
-    setSections(newSections);
-  };
-
   const checkMatrix = () => {
     if (!id || !selectedMatrixId) {
       toast.error("Please select a matrix");
@@ -177,20 +183,47 @@ const AdminCourseDetail = () => {
       {
         onSuccess: (result) => {
           setIsMatrixValid(result.isValid);
-          console.log("Matrix check result:", result);
+          if (result.isValid) {
+            toast.success("Matrix is valid and ready to use");
+          } else {
+            toast.error(result.message || "Matrix is not valid");
+          }
         },
         onError: (error: any) => {
           toast.error(error.message || "Failed to check matrix");
-          console.error("Matrix check error:", error);
+          setIsMatrixValid(false);
         },
       }
     );
+  };
+
+  const calculateNextOrder = (chapterId: number | null) => {
+    console.log("Calculating next order for chapterId:", chapterId);
+    console.log("Current chapters:", chapters);
+    
+    if (chapterId) {
+      const chapter = chapters.find(c => c.id === chapterId);
+      console.log("Found chapter:", chapter);
+      if (chapter) {
+        const lessonOrders = (chapter.lessons || []).map(l => l.order || 0);
+        const assignmentOrders = (chapter.assignments || []).map(a => a.order || 0);
+        console.log("Lesson orders:", lessonOrders);
+        console.log("Assignment orders:", assignmentOrders);
+        const maxOrder = Math.max(...lessonOrders, ...assignmentOrders, 0);
+        console.log("Max order:", maxOrder);
+        return maxOrder + 1;
+      }
+    }
+    console.log("Using courseContent length:", courseContent.length);
+    return courseContent.length + 1;
   };
 
   const handleAddOrUpdate = async () => {
     try {
       const values = await form.validateFields();
       const type = form.getFieldValue("type");
+      console.log("Form values:", values);
+      console.log("Selected chapter ID:", selectedChapterId);
 
       if (type === "chapter") {
         const chapterData: Chapter = {
@@ -199,6 +232,7 @@ const AdminCourseDetail = () => {
           order: chapters.length + 1,
           courseId: parseInt(id),
         };
+        console.log("Creating chapter with data:", chapterData);
         createChapterMutation.mutate(
           { courseId: id, data: chapterData },
           {
@@ -214,6 +248,9 @@ const AdminCourseDetail = () => {
           }
         );
       } else if (type === "lesson") {
+        const nextOrder = calculateNextOrder(selectedChapterId);
+        console.log("Calculated next order for lesson:", nextOrder);
+        
         const lessonData: Lesson = {
           title: values.title,
           description: values.description,
@@ -221,11 +258,10 @@ const AdminCourseDetail = () => {
           content: values.lessonType === LessonType.JSON ? { sections } : null,
           video_url: values.lessonType === LessonType.VIDEO ? values.video_url : undefined,
           courseId: parseInt(id),
-          order: selectedChapterId ? 
-            (chapters.find(c => c.id === selectedChapterId)?.lessons?.length || 0) + 1 : 
-            courseContent.length + 1,
+          order: nextOrder,
           chapterId: selectedChapterId || undefined,
         };
+        console.log("Creating lesson with data:", lessonData);
         createLessonMutation.mutate(
           { courseId: id, data: lessonData },
           {
@@ -248,16 +284,18 @@ const AdminCourseDetail = () => {
             toast.error("Please select and verify a valid matrix");
             return;
           }
+          const nextOrder = calculateNextOrder(selectedChapterId);
+          console.log("Calculated next order for matrix assignment:", nextOrder);
+          
           const matrixData: Omit<AssignmentCreate, "questionIds" | "question_scores" | "total_points"> = {
             title: values.title,
             description: values.description,
             duration: values.duration ? parseInt(values.duration) : undefined,
             courseId: parseInt(id),
-            order: selectedChapterId ? 
-              (chapters.find(c => c.id === selectedChapterId)?.assignments?.length || 0) + 1 : 
-              courseContent.length + 1,
+            order: nextOrder,
             chapterId: selectedChapterId || undefined,
           };
+          console.log("Creating matrix assignment with data:", matrixData);
           createAssignmentFromMatrixMutation.mutate(
             {
               courseId: id,
@@ -300,19 +338,21 @@ const AdminCourseDetail = () => {
             0
           );
 
+          const nextOrder = calculateNextOrder(selectedChapterId);
+          console.log("Calculated next order for manual assignment:", nextOrder);
+          
           const assignmentData: AssignmentCreate = {
             title: values.title,
             description: values.description,
             duration: values.duration ? parseInt(values.duration) : undefined,
             courseId: parseInt(id),
-            order: selectedChapterId ? 
-              (chapters.find(c => c.id === selectedChapterId)?.assignments?.length || 0) + 1 : 
-              courseContent.length + 1,
+            order: nextOrder,
             questionIds: selectedQuestions.map((q) => q.id),
             question_scores,
             total_points,
             chapterId: selectedChapterId || undefined,
           };
+          console.log("Creating manual assignment with data:", assignmentData);
           createAssignmentMutation.mutate(
             { courseId: id, data: assignmentData },
             {
@@ -387,6 +427,37 @@ const AdminCourseDetail = () => {
       toast.success("Order updated successfully");
     } catch (error: any) {
       toast.error(error.message || "Failed to update order");
+    }
+  };
+
+  const handleMoveChapter = async (chapter: Chapter, direction: 'up' | 'down') => {
+    const sortedChapters = [...chapters].sort((a, b) => a.order - b.order);
+    const currentIndex = sortedChapters.findIndex(c => c.id === chapter.id);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= sortedChapters.length) return;
+
+    // Swap orders
+    const tempOrder = sortedChapters[currentIndex].order;
+    sortedChapters[currentIndex].order = sortedChapters[newIndex].order;
+    sortedChapters[newIndex].order = tempOrder;
+
+    try {
+      await Promise.all([
+        updateChapterOrderMutation.mutateAsync({
+          chapterId: sortedChapters[currentIndex].id!.toString(),
+          order: sortedChapters[currentIndex].order,
+        }),
+        updateChapterOrderMutation.mutateAsync({
+          chapterId: sortedChapters[newIndex].id!.toString(),
+          order: sortedChapters[newIndex].order,
+        })
+      ]);
+      queryClient.invalidateQueries({ queryKey: ["chapters", id] });
+      toast.success("Chapter order updated successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update chapter order");
     }
   };
 
@@ -489,18 +560,72 @@ const AdminCourseDetail = () => {
     },
   ];
 
+
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    setPage(pagination.current);
+    setLimit(pagination.pageSize);
+    setSortField(sorter.field);
+    setSortOrder(sorter.order);
+    setFilters({
+      difficulty_level: filters.difficulty_level?.[0],
+      questionType: filters.questionType?.[0],
+      tags: filters.tags,
+    });
+  };
+
   const allQuestionsColumns = [
     {
       title: "Question Name",
       dataIndex: "questionName",
       key: "questionName",
       render: (text: string) => <Text>{text}</Text>,
+      sorter: true,
     },
     {
       title: "Type",
       dataIndex: "questionType",
       key: "questionType",
       render: (text: string) => <Text>{text}</Text>,
+      filters: [
+        { text: "Multiple Choice", value: "multiple_choice" },
+        { text: "True/False", value: "true_false" },
+        { text: "Short Answer", value: "short_answer" },
+        { text: "Long Answer", value: "long_answer" },
+      ],
+    },
+    {
+      title: "Difficulty",
+      dataIndex: "difficulty_level",
+      key: "difficulty_level",
+      render: (text: string) => <Text>{text}</Text>,
+      filters: [
+        { text: "Easy", value: "easy" },
+        { text: "Medium", value: "medium" },
+        { text: "Hard", value: "hard" },
+      ],
+    },
+    {
+      title: "Tags",
+      dataIndex: "tags",
+      key: "tags",
+      render: (tags: any[]) => (
+        <Space size={[0, 8]} wrap>
+          {tags.map((tag) => (
+            <Tag key={tag.id} color="blue">
+              {tag.name}
+            </Tag>
+          ))}
+        </Space>
+      ),
+      filters: paginatedQuestions?.questions
+        ?.flatMap((q: QuestionTable) => q.tags)
+        .filter((tag: any, index: number, self: any[]) => 
+          index === self.findIndex((t) => t.id === tag.id)
+        )
+        .map((tag: any) => ({
+          text: tag.name,
+          value: tag.id,
+        })) || [],
     },
     {
       title: "Action",
@@ -510,6 +635,7 @@ const AdminCourseDetail = () => {
           type="primary"
           onClick={() => handleAddQuestion(record)}
           disabled={!!selectedQuestions.find((q) => q.id === record.id)}
+          style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
         >
           Add
         </Button>
@@ -541,6 +667,100 @@ const AdminCourseDetail = () => {
       </div>
     );
   };
+
+  const renderChapterHeader = (chapter: Chapter) => (
+    <div className="flex items-center justify-between">
+      <span style={{ fontWeight: 600, fontSize: 18, color: '#ff6a00' }}>
+        <BookOutlined style={{ color: "#ff6a00", marginRight: 8 }} />
+        {chapter.title}
+      </span>
+      <Space>
+        <Tooltip title="Move Up">
+          <Button
+            type="text"
+            icon={<ArrowUpOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleMoveChapter(chapter, 'up');
+            }}
+            className="transition-all duration-200 hover:bg-orange-50"
+          />
+        </Tooltip>
+        <Tooltip title="Move Down">
+          <Button
+            type="text"
+            icon={<ArrowDownOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleMoveChapter(chapter, 'down');
+            }}
+            className="transition-all duration-200 hover:bg-orange-50"
+          />
+        </Tooltip>
+        <Tooltip title="Add Lesson">
+          <Button
+            type="text"
+            icon={<PlusOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedChapterId(chapter.id!);
+              setModalVisible(true);
+              setModalType("lesson");
+              setSections([]);
+              form.resetFields();
+              form.setFieldsValue({
+                type: "lesson",
+                lessonType: LessonType.JSON,
+              });
+            }}
+            className="transition-all duration-200 hover:bg-orange-50"
+          />
+        </Tooltip>
+        <Tooltip title="Add Assignment">
+          <Button
+            type="text"
+            icon={<FileDoneOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedChapterId(chapter.id!);
+              setModalVisible(true);
+              setModalType("assignment");
+              form.resetFields();
+              form.setFieldsValue({ type: "assignment" });
+              setSelectedQuestions([]);
+              setQuestionPoints({});
+              setUseMatrix(false);
+              setSelectedMatrixId(null);
+              setIsMatrixValid(false);
+            }}
+            className="transition-all duration-200 hover:bg-orange-50"
+          />
+        </Tooltip>
+        <Tooltip title="Delete Chapter">
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              Modal.confirm({
+                title: "Delete Chapter",
+                content: "Are you sure you want to delete this chapter?",
+                onOk: () => {
+                  deleteChapterMutation.mutate(chapter.id!.toString(), {
+                    onSuccess: () => {
+                      queryClient.invalidateQueries({ queryKey: ["chapters", id] });
+                    },
+                  });
+                },
+              });
+            }}
+            className="transition-all duration-200 hover:bg-red-50"
+          />
+        </Tooltip>
+      </Space>
+    </div>
+  );
 
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
@@ -590,80 +810,10 @@ const AdminCourseDetail = () => {
         </Card>
       ) : (
         <Collapse bordered={false} style={{ background: "#f9f9f9" }}>
-          {chapters.map((chapter) => (
+          {chapters.sort((a, b) => a.order - b.order).map((chapter) => (
             <Panel
               key={chapter.id!}
-              header={
-                <div className="flex items-center justify-between">
-                  <span style={{ fontWeight: 600, fontSize: 18, color: '#ff6a00' }}>
-                    <BookOutlined style={{ color: "#ff6a00", marginRight: 8 }} />
-                    {chapter.title}
-                  </span>
-                  <Space>
-                    <Tooltip title="Add Lesson">
-                      <Button
-                        type="text"
-                        icon={<PlusOutlined />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedChapterId(chapter.id!);
-                          setModalVisible(true);
-                          setModalType("lesson");
-                          setSections([]);
-                          form.resetFields();
-                          form.setFieldsValue({
-                            type: "lesson",
-                            lessonType: LessonType.JSON,
-                          });
-                        }}
-                        className="transition-all duration-200 hover:bg-orange-50"
-                      />
-                    </Tooltip>
-                    <Tooltip title="Add Assignment">
-                      <Button
-                        type="text"
-                        icon={<FileDoneOutlined />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedChapterId(chapter.id!);
-                          setModalVisible(true);
-                          setModalType("assignment");
-                          form.resetFields();
-                          form.setFieldsValue({ type: "assignment" });
-                          setSelectedQuestions([]);
-                          setQuestionPoints({});
-                          setUseMatrix(false);
-                          setSelectedMatrixId(null);
-                          setIsMatrixValid(false);
-                        }}
-                        className="transition-all duration-200 hover:bg-orange-50"
-                      />
-                    </Tooltip>
-                    <Tooltip title="Delete Chapter">
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          Modal.confirm({
-                            title: "Delete Chapter",
-                            content: "Are you sure you want to delete this chapter?",
-                            onOk: () => {
-                              deleteChapterMutation.mutate(chapter.id!.toString(), {
-                                onSuccess: () => {
-                                  queryClient.invalidateQueries({ queryKey: ["chapters", id] });
-                                },
-                              });
-                            },
-                          });
-                        }}
-                        className="transition-all duration-200 hover:bg-red-50"
-                      />
-                    </Tooltip>
-                  </Space>
-                </div>
-              }
+              header={renderChapterHeader(chapter)}
             >
               {renderChapterContent(chapter)}
             </Panel>
@@ -672,361 +822,210 @@ const AdminCourseDetail = () => {
       )}
 
       <Modal
-        title={
-          <span style={{ color: '#ff6a00' }}>
-            {modalType === "lesson"
-              ? "Add Lesson"
-              : modalType === "assignment"
-              ? "Add Assignment"
-              : "Add Chapter"}
-          </span>
-        }
-        open={modalVisible}
+        title={<span style={{ color: '#ff6a00' }}>Create Assignment</span>}
+        open={modalVisible && modalType === "assignment"}
         onCancel={() => {
           setModalVisible(false);
           setModalType(null);
+          form.resetFields();
           setSelectedQuestions([]);
           setQuestionPoints({});
           setUseMatrix(false);
           setSelectedMatrixId(null);
           setIsMatrixValid(false);
-          setSections([]);
-          setSelectedChapterId(null);
         }}
-        onOk={handleAddOrUpdate}
-        confirmLoading={
-          createLessonMutation.isPending ||
-          createAssignmentMutation.isPending ||
-          createAssignmentFromMatrixMutation.isPending ||
-          createChapterMutation.isPending
-        }
+        footer={null}
         width={800}
-        okButtonProps={{
-          disabled: useMatrix && (!selectedMatrixId || !isMatrixValid),
-          style: { background: '#ff6a00', borderColor: '#ff6a00' }
-        }}
       >
-        <Form form={form} layout="vertical">
-          <Form.Item name="type" hidden>
-            <Input />
-          </Form.Item>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAddOrUpdate}
+          initialValues={{ type: "assignment" }}
+        >
           <Form.Item
             name="title"
-            label="Title"
-            rules={[{ required: true, message: "Title is required" }]}
+            label="Assignment Title"
+            rules={[{ required: true, message: "Please enter the assignment title" }]}
           >
-            <Input />
+            <Input placeholder="Enter assignment title" />
           </Form.Item>
+
           <Form.Item
             name="description"
             label="Description"
-            rules={[{ required: true, message: "Description is required" }]}
+            rules={[{ required: true, message: "Please enter the description" }]}
           >
-            <Input.TextArea rows={4} />
+            <Input.TextArea rows={4} placeholder="Enter assignment description" />
           </Form.Item>
-          {modalType === "lesson" && (
-            <>
+
+          <Form.Item
+            name="duration"
+            label="Duration (minutes)"
+            rules={[
+              { 
+                type: 'number',
+                transform: (value) => Number(value),
+                min: 1,
+                message: 'Duration must be at least 1 minute'
+              }
+            ]}
+          >
+            <Input type="number" min={1} />
+          </Form.Item>
+
+          <Form.Item
+            name="creationType"
+            label="Creation Method"
+            rules={[{ required: true, message: "Please select creation method" }]}
+          >
+            <Radio.Group onChange={(e) => {
+              setUseMatrix(e.target.value === 'matrix');
+              setIsMatrixValid(false);
+              setSelectedMatrixId(null);
+            }}>
+              <Radio value="manual">Manual Question Selection</Radio>
+              <Radio value="matrix">Use Matrix</Radio>
+            </Radio.Group>
+          </Form.Item>
+
+          {useMatrix ? (
+            <div>
               <Form.Item
-                name="lessonType"
-                label="Lesson Type"
-                rules={[{ required: true, message: "Lesson type is required" }]}
+                name="matrixId"
+                label="Select Matrix"
+                rules={[{ required: true, message: "Please select a matrix" }]}
               >
-                <Select>
-                  <Option value={LessonType.JSON}>JSON Content</Option>
-                  <Option value={LessonType.VIDEO}>Video</Option>
-                </Select>
-              </Form.Item>
-              <Form.Item
-                noStyle
-                shouldUpdate={(prevValues, currentValues) =>
-                  prevValues.lessonType !== currentValues.lessonType
-                }
-              >
-                {({ getFieldValue }) =>
-                  getFieldValue("lessonType") === LessonType.JSON ? (
-                    <>
-                      <Button type="dashed" onClick={handleAddSection} block>
-                        Add Section
-                      </Button>
-                      {sections.map((section, index) => (
-                        <Card
-                          key={index}
-                          className="mt-4"
-                          title={`Section ${index + 1}`}
-                        >
-                          <Space direction="vertical" style={{ width: "100%" }}>
-                            <Form.Item
-                              label="Section Type"
-                              required
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Section type is required",
-                                },
-                              ]}
-                            >
-                              <Select
-                                value={section.type}
-                                onChange={(value) =>
-                                  handleSectionChange(index, "type", value)
-                                }
-                              >
-                                <Option value="theory">Theory</Option>
-                                <Option value="example">Example</Option>
-                                <Option value="try_it">Try It</Option>
-                                <Option value="exercise">Exercise</Option>
-                              </Select>
-                            </Form.Item>
-                            <Form.Item
-                              label="Section Title"
-                              required
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Section title is required",
-                                },
-                              ]}
-                            >
-                              <Input
-                                value={section.title}
-                                onChange={(e) =>
-                                  handleSectionChange(
-                                    index,
-                                    "title",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </Form.Item>
-                            {section.type === "theory" && (
-                              <Form.Item label="Content (Markdown)">
-                                <Input.TextArea
-                                  rows={4}
-                                  value={section.content}
-                                  onChange={(e) =>
-                                    handleSectionChange(
-                                      index,
-                                      "content",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="Enter markdown content"
-                                />
-                              </Form.Item>
-                            )}
-                            {section.type === "example" && (
-                              <Form.Item label="Code (HTML/CSS)">
-                                <Input.TextArea
-                                  rows={4}
-                                  value={section.content}
-                                  onChange={(e) =>
-                                    handleSectionChange(
-                                      index,
-                                      "content",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="Enter HTML/CSS code"
-                                />
-                              </Form.Item>
-                            )}
-                            {section.type === "try_it" && (
-                              <>
-                                <Form.Item label="Code (HTML/CSS)">
-                                  <Input.TextArea
-                                    rows={4}
-                                    value={section.code}
-                                    onChange={(e) =>
-                                      handleSectionChange(
-                                        index,
-                                        "code",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="Enter default HTML/CSS code"
-                                  />
-                                </Form.Item>
-                                <Form.Item label="Instructions (Markdown)">
-                                  <Input.TextArea
-                                    rows={4}
-                                    value={section.instructions}
-                                    onChange={(e) =>
-                                      handleSectionChange(
-                                        index,
-                                        "instructions",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="Enter instructions for the student"
-                                  />
-                                </Form.Item>
-                                <Form.Item label="Expected Output (Description)">
-                                  <Input.TextArea
-                                    rows={2}
-                                    value={section.expectedOutput}
-                                    onChange={(e) =>
-                                      handleSectionChange(
-                                        index,
-                                        "expectedOutput",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="Describe the expected output"
-                                  />
-                                </Form.Item>
-                              </>
-                            )}
-                            {section.type === "exercise" && (
-                              <>
-                                <Form.Item label="Instructions (Markdown)">
-                                  <Input.TextArea
-                                    rows={4}
-                                    value={section.instructions}
-                                    onChange={(e) =>
-                                      handleSectionChange(
-                                        index,
-                                        "instructions",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="Enter instructions for the exercise"
-                                  />
-                                </Form.Item>
-                                <Form.Item label="Solution (HTML/CSS)">
-                                  <Input.TextArea
-                                    rows={4}
-                                    value={section.solution}
-                                    onChange={(e) =>
-                                      handleSectionChange(
-                                        index,
-                                        "solution",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="Enter the solution code"
-                                  />
-                                </Form.Item>
-                              </>
-                            )}
-                            <Button
-                              danger
-                              onClick={() => handleRemoveSection(index)}
-                            >
-                              Remove Section
-                            </Button>
-                          </Space>
-                        </Card>
-                      ))}
-                    </>
-                  ) : (
-                    <Form.Item
-                      name="video_url"
-                      label="Video URL"
-                      rules={[
-                        { required: true, message: "Video URL is required" },
-                        { type: "url", message: "Please enter a valid URL" },
-                      ]}
-                    >
-                      <Input placeholder="https://www.youtube.com/watch?v=example" />
-                    </Form.Item>
-                  )
-                }
-              </Form.Item>
-            </>
-          )}
-          {modalType === "assignment" && (
-            <>
-              <Form.Item
-                name="duration"
-                label="Duration (minutes)"
-                rules={[
-                  { required: true, message: "Duration is required" },
-                  {
-                    type: "number",
-                    min: 1,
-                    message: "Duration must be a positive number",
-                    transform: (value) => Number(value),
-                  },
-                ]}
-              >
-                <Input type="number" />
-              </Form.Item>
-              <Form.Item label="Creation Method">
                 <Select
-                  value={useMatrix ? "matrix" : "manual"}
+                  placeholder="Select a matrix"
                   onChange={(value) => {
-                    setUseMatrix(value === "matrix");
-                    setSelectedQuestions([]);
-                    setQuestionPoints({});
-                    setSelectedMatrixId(null);
+                    setSelectedMatrixId(value);
                     setIsMatrixValid(false);
                   }}
+                  loading={isMatricesLoading}
                 >
-                  <Option value="manual">Manual</Option>
-                  <Option value="matrix">Matrix</Option>
+                  {matrices.matrices.map((matrix) => (
+                    <Option key={matrix.id} value={matrix.id?.toString()}>
+                      {matrix.name}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
-              {useMatrix ? (
-                <>
-                  <Form.Item label="Select Matrix">
-                    <Select
-                      placeholder="Select a matrix"
-                      onChange={(value) => {
-                        setSelectedMatrixId(value);
-                        setIsMatrixValid(false);
-                      }}
-                      loading={isMatricesLoading}
-                    >
-                      {matrices.map((matrix: Matrix) => (
-                        <Option key={matrix.id} value={matrix.id!.toString()}>
-                          {matrix.name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <Form.Item>
-                    <Button
-                      type="default"
-                      onClick={checkMatrix}
-                      loading={checkMatrixAssignmentMutation.isPending}
-                    >
-                      Check Matrix
-                    </Button>
-                  </Form.Item>
-                  {checkMatrixAssignmentMutation.isSuccess && (
-                    <div>
-                      {isMatrixValid ? (
-                        <span className="text-green-500">Matrix is valid</span>
-                      ) : (
-                        <span className="text-red-500">
-                          {checkMatrixAssignmentMutation.data?.message}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <h3>Selected Questions</h3>
-                  <Table
-                    dataSource={selectedQuestions}
-                    columns={selectedQuestionsColumns}
-                    rowKey="id"
-                    pagination={false}
-                    loading={isQuestionsLoading}
-                  />
-                  <h3>Your Questions</h3>
-                  <Table
-                    dataSource={allQuestions}
-                    columns={allQuestionsColumns}
-                    rowKey="id"
-                    pagination={{ pageSize: 5 }}
-                    loading={isQuestionsLoading}
-                  />
-                </>
-              )}
+
+              <Space>
+                <Button
+                  type="primary"
+                  onClick={checkMatrix}
+                  loading={checkMatrixAssignmentMutation.isPending}
+                  style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+                >
+                  Test Matrix
+                </Button>
+                {isMatrixValid && (
+                  <Tag color="success">Matrix is valid</Tag>
+                )}
+              </Space>
+            </div>
+          ) : (
+            <>
+              <h3>Selected Questions</h3>
+              <Table
+                dataSource={selectedQuestions}
+                columns={selectedQuestionsColumns}
+                rowKey="id"
+                pagination={false}
+                loading={isQuestionsLoading}
+              />
+              <h3>Your Questions</h3>
+              <div className="mb-4 flex flex-wrap gap-4 items-center">
+                <Input.Search
+                  placeholder="Search questions..."
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{ width: 300 }}
+                  allowClear
+                  className="custom-search"
+                />
+                <Select
+                  placeholder="Question Type"
+                  allowClear
+                  style={{ width: 200 }}
+                  onChange={(value) => setFilters(prev => ({ ...prev, questionType: value }))}
+                  value={filters.questionType}
+                  className="custom-select"
+                >
+                  <Option value="multiple-choice">Multiple Choice</Option>
+                  <Option value="short-answer">Short Answer</Option>
+                  <Option value="coding">Coding</Option>
+                </Select>
+                <Select
+                  placeholder="Difficulty Level"
+                  allowClear
+                  style={{ width: 200 }}
+                  onChange={(value) => setFilters(prev => ({ ...prev, difficulty_level: value }))}
+                  value={filters.difficulty_level}
+                  className="custom-select"
+                >
+                  <Option value="Easy">Easy</Option>
+                  <Option value="Medium">Medium</Option>
+                  <Option value="Hard">Hard</Option>
+                </Select>
+                <Select
+                  placeholder="Tags"
+                  allowClear
+                  mode="multiple"
+                  style={{ width: 300 }}
+                  onChange={(value) => setFilters(prev => ({ ...prev, tags: value }))}
+                  value={filters.tags}
+                  className="custom-select"
+                >
+                  {tags.tags.map(tag => (
+                    <Option key={tag.id} value={tag.id}>{tag.name}</Option>
+                  ))}
+                </Select>
+                <Button 
+                  onClick={() => {
+                    setSearch("");
+                    setFilters({});
+                    setSortField(undefined);
+                    setSortOrder(undefined);
+                  }}
+                  style={{ 
+                    borderColor: '#ff6a00',
+                    color: '#ff6a00'
+                  }}
+                >
+                  Reset Filters
+                </Button>
+              </div>
+              <Table
+                dataSource={paginatedQuestions?.questions || []}
+                columns={allQuestionsColumns}
+                rowKey="id"
+                pagination={{
+                  current: page,
+                  pageSize: limit,
+                  total: paginatedQuestions?.pagination?.total || 0,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} items`,
+                }}
+                loading={isQuestionsLoading}
+                onChange={handleTableChange}
+                scroll={{ y: 400 }}
+              />
             </>
           )}
+
+          <Form.Item style={{ marginTop: 24 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={createAssignmentMutation.isPending || createAssignmentFromMatrixMutation.isPending}
+              disabled={useMatrix && (!selectedMatrixId || !isMatrixValid)}
+              style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+            >
+              Create Assignment
+            </Button>
+          </Form.Item>
         </Form>
       </Modal>
     </div>

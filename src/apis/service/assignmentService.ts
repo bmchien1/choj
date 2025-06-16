@@ -35,6 +35,44 @@ const assignmentService = {
     const response = await axiosClient.put(`/api/assignments/${assignmentId}`, { order, chapterId });
     return response.data;
   },
+
+  // New methods for assignment attempts
+  startAttempt: async (assignmentId: string): Promise<any> => {
+    const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    const response = await axiosClient.post(`/api/assignments/${assignmentId}/start`, { userId: user.id });
+    return response.data;
+  },
+
+  updateAttemptActive: async (attemptId: string): Promise<any> => {
+    const response = await axiosClient.put(`/api/assignments/attempt/${attemptId}/active`);
+    return response.data;
+  },
+
+  submitAttempt: async (attemptId: string): Promise<any> => {
+    const response = await axiosClient.put(`/api/assignments/attempt/${attemptId}/submit`);
+    return response.data;
+  },
+
+  getActiveAttempt: async (assignmentId: string): Promise<any> => {
+    const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    const response = await axiosClient.get(`/api/assignments/${assignmentId}/attempt`, { params: { userId: user.id } });
+    return response.data;
+  },
+
+  updateTimeLeft: async (attemptId: string, timeLeft: number): Promise<any> => {
+    const response = await axiosClient.put(`/api/assignments/attempt/${attemptId}/time`, { timeLeft });
+    return response.data;
+  },
+
+  saveTemporaryAnswers: async (attemptId: string, answers: any): Promise<any> => {
+    const response = await axiosClient.put(`/api/assignments/attempt/${attemptId}/answers`, { answers });
+    return response.data;
+  },
+
+  getTemporaryAnswers: async (attemptId: string): Promise<any> => {
+    const response = await axiosClient.get(`/api/assignments/attempt/${attemptId}/answers`);
+    return response.data;
+  },
 };
 
 export default assignmentService;

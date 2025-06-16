@@ -64,4 +64,22 @@ export const useDeleteChapter = () => {
       toast.error("Failed to delete chapter");
     },
   });
+};
+
+export const useUpdateChapterOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation<
+    Chapter,
+    Error,
+    { chapterId: string; order: number }
+  >({
+    mutationFn: ({ chapterId, order }) => chapterService.updateOrder(chapterId, order),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chapters"] });
+      toast.success("Chapter order updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update chapter order");
+    },
+  });
 }; 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useContestQueries } from '../hooks/useContestQueries';
-import { useBuildCode, useCreateSubmission } from '../hooks/useSubmissionQueries';
+import { useBuildCode, useCreateSubmission, useCreateContestSubmission } from '../hooks/useSubmissionQueries';
 import {
     Card,
     Typography,
@@ -28,15 +28,20 @@ import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'ace-builds/src-noconflict/theme-dracula';
 import { ClockCircleOutlined } from '@ant-design/icons';
+import { contestService } from "@/apis/service/contestService";
+import { toast } from 'react-hot-toast';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
+// Map language string to number
+const languageMap: { [key: string]: number } = {
+    'python': 1,
+    'java': 2,
+    'c_cpp': 3
+};
+
 const steps = [
-    {
-        title: 'Start',
-        content: 'First-content',
-    },
     {
         title: 'Questions',
         content: 'Second-content',
@@ -53,8 +58,9 @@ export const ContestPage: React.FC = () => {
     const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
     const contestId = parseInt(id || '0');
     const { getContestById } = useContestQueries();
-    const { mutate: createSubmission, isPending: isSubmitting } = useCreateSubmission();
+    const {  isPending: isSubmitting } = useCreateSubmission();
     const { mutate: buildCode, isPending: isBuilding } = useBuildCode();
+    const { mutate: createContestSubmission } = useCreateContestSubmission();
     const contestQuery = getContestById(contestId);
     const [form] = Form.useForm();
 
@@ -65,11 +71,13 @@ export const ContestPage: React.FC = () => {
     const [isTimeUp, setIsTimeUp] = useState(false);
     const [isTimeUpModalVisible, setIsTimeUpModalVisible] = useState(false);
     const [buildResults, setBuildResults] = useState<{ [key: string]: string }>({});
-    const [gradingResults, setGradingResults] = useState<any>(null);
+    const [gradingResults, ] = useState<any>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedLanguages, setSelectedLanguages] = useState<{ [key: string]: string }>({});
     const [editorCodes, setEditorCodes] = useState<{ [key: string]: string }>({});
     const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
+    const [attempt, setAttempt] = useState<any>(null);
+    const [, setIsLoadingAttempt] = useState(true);
 
     useEffect(() => {
         if (contestQuery.data) {
@@ -164,47 +172,141 @@ export const ContestPage: React.FC = () => {
         );
     };
 
-    const handleSubmit = async () => {
-        if (!user) return;
-        try {
-            // Clear saved time when submitting
-            localStorage.removeItem(`contest_${contestId}_start_time`);
-            localStorage.removeItem(`contest_${contestId}_time_left`);
-            setTimeLeft(0);
-            
-            // Prepare answers for submission
-            const answersArr = questions.map((question: Question) => {
-                let answer = answers[question.id || 0] || '';
-                if (question.questionType === 'coding') {
-                    answer = editorCodes[question.id?.toString() || ''] || answer;
+    // Load attempt when component mounts
+    useEffect(() => {
+        const loadAttempt = async () => {
+            try {
+                const activeAttempt = await contestService.getActiveAttempt(contestId?.toString() || "");
+                if (activeAttempt) {
+                    setAttempt(activeAttempt);
+                    // Update time left first
+                    await contestService.updateTimeLeft(activeAttempt.id.toString(), activeAttempt.timeLeft);
+                    setTimeLeft(activeAttempt.timeLeft);
+                    setStartTime(new Date(activeAttempt.startTime).getTime());
+                } else {
+                    // Start new attempt if none exists
+                    const newAttempt = await contestService.startAttempt(contestId?.toString() || "");
+                    setAttempt(newAttempt);
+                    setTimeLeft(newAttempt.timeLeft);
+                    setStartTime(new Date(newAttempt.startTime).getTime());
                 }
-                return {
-                    questionId: question.id,
-                    sourceCode: answer,
-                    language: selectedLanguages[question.id?.toString() || ''] || question.language || 'javascript',
-                };
-            }).filter((answer: { questionId: number | undefined; sourceCode: string; language: string }) => answer.sourceCode.trim() !== ''); // Only include non-empty answers
+            } catch (error) {
+                console.error("Error loading attempt:", error);
+                toast.error("Failed to load contest attempt");
+            } finally {
+                setIsLoadingAttempt(false);
+            }
+        };
 
-            createSubmission(
+        if (contestId) {
+            loadAttempt();
+        }
+    }, [contestId]);
+
+    // Timer logic
+    useEffect(() => {
+        if (contestQuery.data?.duration && attempt && startTime) {
+            const timer = setInterval(() => {
+                const now = Date.now();
+                const elapsedTime = Math.floor((now - startTime) / 1000);
+                const secondsLeft = Math.max(0, (contestQuery.data.duration || 60) * 60 - elapsedTime);
+                setTimeLeft(secondsLeft);
+
+                if (secondsLeft <= 60 && secondsLeft > 59) {
+                    toast.error("1 minute remaining!");
+                }
+
+                if (secondsLeft <= 0 && !isTimeUp) {
+                    clearInterval(timer);
+                    setIsTimeUp(true);
+                    setIsTimeUpModalVisible(true);
+                }
+            }, 1000);
+
+            return () => clearInterval(timer);
+        }
+    }, [contestQuery.data?.duration, startTime, attempt, isTimeUp]);
+
+    // Update time left periodically
+    useEffect(() => {
+        if (attempt && timeLeft !== null) {
+            const updateTimeLeft = async () => {
+                try {
+                    await contestService.updateTimeLeft(attempt.id.toString(), timeLeft);
+                } catch (error) {
+                    console.error("Error updating time left:", error);
+                }
+            };
+
+            const interval = setInterval(updateTimeLeft, 60000); // Update every minute
+            return () => clearInterval(interval);
+        }
+    }, [attempt, timeLeft]);
+
+    const handleSubmit = async () => {
+        if (!attempt) {
+            toast.error("No active attempt found");
+            return;
+        }
+
+        try {
+            // Submit the attempt first
+            await contestService.submitAttempt(attempt.id.toString());
+            
+            // Collect all answers from both form and editor
+            const submissionAnswers = contestQuery.data.questions.map((question: Question) => {
+                const questionId = question.id?.toString() || '';
+                let answer = '';
+                let language = '';
+
+                if (question.questionType === 'coding') {
+                    answer = editorCodes[questionId] || '';
+                    language = selectedLanguages[questionId] || question.language || 'python';
+                } else {
+                    answer = answers[question.id || 0] || '';
+                }
+
+                return {
+                    questionId: question.id || 0,
+                    sourceCode: answer,
+                    language: language
+                };
+            }).filter((answer: { questionId: number; sourceCode: string; language: string }) => 
+                answer.sourceCode && answer.sourceCode.trim() !== ''
+            );
+
+            console.log('Submitting answers:', submissionAnswers);
+
+            if (submissionAnswers.length === 0) {
+                toast.error("Please provide at least one answer before submitting");
+                return;
+            }
+
+            // Create submission
+            createContestSubmission(
                 {
                     userId: user.id,
-                    testId: contestId,
-                    answers: answersArr,
-                } as any,
+                    contestId: parseInt(contestId?.toString() || "0"),
+                    testId: parseInt(contestId?.toString() || "0"),
+                    problemId: submissionAnswers[0].questionId,
+                    languageId: languageMap[submissionAnswers[0].language || 'python'] || 1,
+                    sourceCode: submissionAnswers[0].sourceCode,
+                    answers: submissionAnswers
+                },
                 {
-                    onSuccess: (data) => {
-                        console.log('Submission response:', data);
-                        setGradingResults(data);
-                        setIsModalVisible(true);
+                    onSuccess: () => {
+                        toast.success("Contest submitted successfully. Results will be available soon.");
+                        navigate(`/contest`);
                     },
-                    onError: (error) => {
-                        console.error('Submission error:', error);
-                        message.error(`Submission failed: ${error.message}`);
+                    onError: (error: any) => {
+                        console.error("Submission error:", error);
+                        toast.error(`Submission failed: ${error.message || "Unknown error"}`);
                     },
                 }
             );
-        } catch (error) {
-            message.error('Failed to submit answers');
+        } catch (error: any) {
+            console.error("Error submitting attempt:", error);
+            toast.error(`Failed to submit attempt: ${error.message || "Unknown error"}`);
         }
     };
 
@@ -299,31 +401,6 @@ export const ContestPage: React.FC = () => {
         switch (current) {
             case 0:
                 return (
-                    <Card>
-                        <Title level={2}>{contest.title}</Title>
-                        <Paragraph>{contest.description}</Paragraph>
-                        <Title level={4}>Instructions:</Title>
-                        <Paragraph>
-                            - This contest contains {questions.length} questions
-                        </Paragraph>
-                        <Paragraph>
-                            - You have {Math.floor(timeLeft / 60)} minutes and {timeLeft % 60} seconds remaining
-                        </Paragraph>
-                        <Paragraph>
-                            - Make sure to submit your answers before the time runs out
-                        </Paragraph>
-                        <Button
-                            type="primary"
-                            onClick={next}
-                            disabled={timeLeft <= 0}
-                            style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
-                        >
-                            Start Contest
-                        </Button>
-                    </Card>
-                );
-            case 1:
-                return (
                     <Form form={form} layout="vertical">
                         {questions.map((question: Question, index: number) => (
                             <Card 
@@ -363,7 +440,7 @@ export const ContestPage: React.FC = () => {
                                     <Form.Item name={`question_${question.id}`}>
                                         <div style={{ marginBottom: 8 }}>
                                             <Select
-                                                defaultValue={question.language || 'javascript'}
+                                                defaultValue={question.language || 'c_cpp'}
                                                 style={{ width: 120, marginBottom: 8 }}
                                                 onChange={(value) =>
                                                     setSelectedLanguages((prev) => ({
@@ -372,9 +449,9 @@ export const ContestPage: React.FC = () => {
                                                     }))
                                                 }
                                             >
+                                                <Select.Option value="c_cpp">C++</Select.Option>
                                                 <Select.Option value="java">Java</Select.Option>
                                                 <Select.Option value="python">Python</Select.Option>
-                                                <Select.Option value="c_cpp">C/C++</Select.Option>
                                             </Select>
                                         </div>
                                         <AceEditor
@@ -473,7 +550,7 @@ export const ContestPage: React.FC = () => {
                         </div>
                     </Form>
                 );
-            case 2:
+            case 1:
                 return (
                     <Card>
                         <Title level={3}>Review Your Answers</Title>
@@ -525,7 +602,7 @@ export const ContestPage: React.FC = () => {
                     <div>{renderStepContent()}</div>
                 </div>
 
-                {current === 1 && (
+                {current === 0 && (
                     <Affix offsetTop={24}>
                         <Card 
                             bordered={false} 

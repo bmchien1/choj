@@ -2,7 +2,7 @@ import { Button, Card, Form, Input, Modal, Select, Table, Typography, Space, Inp
 import { HiPencilAlt } from "react-icons/hi";
 import { BiTrash } from "react-icons/bi";
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
-import { useGetMatricesByUser, useDeleteMatrix, useCreateMatrix, useUpdateMatrix } from "@/hooks/useMatrixQueries";
+import { useGetAllMatrices, useDeleteMatrix, useCreateMatrix, useUpdateMatrix } from "@/hooks/useMatrixQueries";
 import { useGetAllTags } from "@/hooks/useTagQueries";
 import toast from "react-hot-toast";
 import { useState, useMemo } from "react";
@@ -11,18 +11,20 @@ import debounce from "lodash/debounce";
 const { Title } = Typography;
 const { Option } = Select;
 
-const ListTeacherMatrix = () => {
-  const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
-  const creatorId = user.id;
+const ListAdminMatrix = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [localSearch, setLocalSearch] = useState("");
   const [apiSearch, setApiSearch] = useState("");
   const [sortField, setSortField] = useState<string>();
   const [sortOrder, setSortOrder] = useState<'ascend' | 'descend'>();
- 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedMatrix, setSelectedMatrix] = useState<any>(null);
+  const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
 
-  const { data: listMatrices = { matrices: [], pagination: { total: 0 } }, isLoading } = useGetMatricesByUser(creatorId, {
+  const { data: listMatrices = { matrices: [], pagination: { total: 0 } }, isLoading } = useGetAllMatrices({
     page,
     limit,
     search: apiSearch,
@@ -34,11 +36,6 @@ const ListTeacherMatrix = () => {
   const deleteMatrix = useDeleteMatrix();
   const createMatrix = useCreateMatrix();
   const updateMatrix = useUpdateMatrix();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedMatrix, setSelectedMatrix] = useState<any>(null);
-  const [form] = Form.useForm();
-  const [editForm] = Form.useForm();
 
   // Debounced search function
   const debouncedSetApiSearch = useMemo(
@@ -67,7 +64,6 @@ const ListTeacherMatrix = () => {
           tagIds: [criterion.tagId],
           percentage: criterion.percentage,
         })),
-        creatorId: creatorId,
       };
 
       await createMatrix.mutateAsync(matrixData);
@@ -125,6 +121,17 @@ const ListTeacherMatrix = () => {
     }
   };
 
+  const handleDeleteMatrix = (id: number) => {
+    deleteMatrix.mutate(id.toString(), {
+      onSuccess: () => {
+        toast.success("Matrix deleted successfully");
+      },
+      onError: () => {
+        toast.error("Failed to delete matrix");
+      },
+    });
+  };
+
   const columns = [
     {
       title: "Matrix Name",
@@ -137,6 +144,12 @@ const ListTeacherMatrix = () => {
       dataIndex: "description",
       key: "description",
       ellipsis: true,
+    },
+    {
+      title: "Created By",
+      dataIndex: ["user", "email"],
+      key: "user",
+      sorter: true,
     },
     {
       title: "Actions",
@@ -173,21 +186,10 @@ const ListTeacherMatrix = () => {
     },
   ];
 
-  const handleDeleteMatrix = (id: number) => {
-    deleteMatrix.mutate(id.toString(), {
-      onSuccess: () => {
-        toast.success("Matrix deleted successfully");
-      },
-      onError: () => {
-        toast.error("Failed to delete matrix");
-      },
-    });
-  };
-
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
       <Space style={{ marginBottom: 16 }} align="center">
-        <Title level={2} style={{ margin: 0, color: '#ff6a00' }}>My Matrices</Title>
+        <Title level={2} style={{ margin: 0, color: '#ff6a00' }}>All Matrices</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -221,7 +223,7 @@ const ListTeacherMatrix = () => {
       </Card>
 
       <Table
-        dataSource={listMatrices?.matrices || []}
+        dataSource={listMatrices.matrices || []}
         columns={columns}
         loading={isLoading}
         rowKey="id"
@@ -229,7 +231,7 @@ const ListTeacherMatrix = () => {
         pagination={{
           current: page,
           pageSize: limit,
-          total: listMatrices?.pagination?.total || 0,
+          total: listMatrices.pagination?.total || 0,
           showSizeChanger: true,
           showTotal: (total) => `Total ${total} items`,
         }}
@@ -542,4 +544,4 @@ const ListTeacherMatrix = () => {
   );
 };
 
-export default ListTeacherMatrix;
+export default ListAdminMatrix; 

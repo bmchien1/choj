@@ -3,17 +3,17 @@ import { Chapter } from "../type";
 
 const chapterService = {
   getByCourse: async (courseId: string): Promise<Chapter[]> => {
-    const response = await axiosClient.get(`/api/chapters/${courseId}`);
+    const response = await axiosClient.get(`/api/chapters/course/${courseId}`);
     return response.data;
   },
 
   getById: async (chapterId: string): Promise<Chapter> => {
-    const response = await axiosClient.get(`/api/chapters/single/${chapterId}`);
+    const response = await axiosClient.get(`/api/chapters/${chapterId}`);
     return response.data;
   },
 
   create: async (courseId: string, data: Chapter): Promise<Chapter> => {
-    const response = await axiosClient.post(`/api/chapters/${courseId}`, data);
+    const response = await axiosClient.post(`/api/chapters/course/${courseId}`, data);
     return response.data;
   },
 
@@ -28,7 +28,7 @@ const chapterService = {
   },
 
   updateOrder: async (chapterId: string, order: number): Promise<Chapter> => {
-    const response = await axiosClient.put(`/api/chapters/${chapterId}`, { order });
+    const response = await axiosClient.put(`/api/chapters/${chapterId}/order`, { order });
     return response.data;
   },
 };

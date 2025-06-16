@@ -20,11 +20,20 @@ const submissionService = {
     return await axiosClient.get(`/api/submissions/contest/${contestId}`).then(res => res.data);
   },
 
+  getByUser: async (userId: number): Promise<Submission[]> => {
+    return await axiosClient.get(`/api/submissions/user/${userId}`).then(res => res.data);
+  },
+
   create: async (data: SubmissionCreate): Promise<any> => {
-    console.log('Creating submission with data:', data);
-    const response = await axiosClient.post("/api/submissions", data);
-    console.log('Submission service response:', response);
-    return response.data;
+    try {
+      console.log('Creating submission with data:', data);
+      const response = await axiosClient.post("/api/submissions", data);
+      console.log('Submission service response:', response);
+      return response.data;
+    } catch (error: any) {
+      console.error('Submission service error:', error.response?.data || error);
+      throw new Error(error.response?.data?.message || error.message || "Failed to create submission");
+    }
   },
 
   getByHash: async (hash: string): Promise<any> => {
@@ -40,6 +49,15 @@ const submissionService = {
       .post("/api/submissions/build", data)
       .then((res) => res.data);
   },
+
+  getByAssignment: async (assignmentId: number): Promise<Submission[]> => {
+    return await axiosClient.get(`/api/submissions/assignment/${assignmentId}`).then(res => res.data);
+  },
+
+  getByAssignmentAndUser: async (assignmentId: number, userId: number): Promise<Submission[]> => {
+    return await axiosClient.get(`/api/submissions/assignment/${assignmentId}/user/${userId}`).then(res => res.data);
+  },
+
 };
 
 export default submissionService;

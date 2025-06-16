@@ -1,20 +1,41 @@
-import { Button, Form, Input, Modal, Table, Typography, Space } from "antd";
+import { Button, Form, Input, Modal, Table, Typography, Space, Card, Select } from "antd";
 import { useNavigate } from "react-router-dom";
 import { HiPencilAlt } from "react-icons/hi";
 import { BiTrash } from "react-icons/bi";
 import { PlusOutlined, EyeOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useGetAllCourses, useDeleteCourse, useCreateCourse, useUpdateCourse } from "@/hooks/useCourseQueries";
 import { Course } from "@/apis/type";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import toast from "react-hot-toast";
+import debounce from "lodash/debounce";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Paragraph } = Typography;
+const { Option } = Select;
 
 const ListAdminCourse = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
-  const { data: listCourses = [], isLoading } = useGetAllCourses();
-  const courses = Array.isArray(listCourses) ? listCourses : listCourses.courses || [];
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [localSearch, setLocalSearch] = useState("");
+  const [apiSearch, setApiSearch] = useState("");
+  const [sortField, setSortField] = useState<string>();
+  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend'>();
+  const [filters, setFilters] = useState<{
+    class?: string;
+    subject?: string;
+  }>({});
+
+  const { data: listCourses = { courses: [], pagination: { total: 0 } }, isLoading } = useGetAllCourses({
+    page,
+    limit,
+    search: apiSearch,
+    sortField,
+    sortOrder,
+    class: filters.class,
+    subject: filters.subject
+  });
+
   const deleteCourse = useDeleteCourse();
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
@@ -24,6 +45,28 @@ const ListAdminCourse = () => {
     type: "edit" | "delete" | null;
     course: Course | null;
   }>({ type: null, course: null });
+
+  // Debounced search function
+  const debouncedSetApiSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        setApiSearch(value);
+      }, 500),
+    []
+  );
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSetApiSearch.cancel();
+    };
+  }, [debouncedSetApiSearch]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocalSearch(value);
+    debouncedSetApiSearch(value);
+  };
 
   const handleDeleteCourse = (id: number) => {
     deleteCourse.mutate(id.toString(), {
@@ -78,10 +121,22 @@ const ListAdminCourse = () => {
 
       await createCourse.mutateAsync(courseData);
       form.resetFields();
+      setModalState({ type: null, course: null });
       toast.success("Course created successfully");
     } catch (error: any) {
       toast.error(error.message || "Failed to create course");
     }
+  };
+
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    setPage(pagination.current);
+    setLimit(pagination.pageSize);
+    setSortField(sorter.field);
+    setSortOrder(sorter.order);
+    setFilters({
+      class: filters.class?.[0],
+      subject: filters.subject?.[0]
+    });
   };
 
   const columns = [
@@ -89,6 +144,7 @@ const ListAdminCourse = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      sorter: true,
     },
     {
       title: 'Description',
@@ -100,11 +156,21 @@ const ListAdminCourse = () => {
       title: 'Class',
       dataIndex: 'class',
       key: 'class',
+      filters: [
+        { text: '10', value: '10' },
+        { text: '11', value: '11' },
+        { text: '12', value: '12' },
+      ],
     },
     {
       title: 'Subject',
       dataIndex: 'subject',
       key: 'subject',
+      filters: [
+        { text: 'Toán', value: 'Toán' },
+        { text: 'Lý', value: 'Lý' },
+        { text: 'Hóa', value: 'Hóa' },
+      ],
     },
     {
       title: 'Actions',
@@ -140,8 +206,6 @@ const ListAdminCourse = () => {
     },
   ];
 
-  if (isLoading) return <div style={{ padding: 24 }}><Text>Loading...</Text></div>;
-
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
       <Space style={{ marginBottom: 16 }} align="center">
@@ -156,11 +220,82 @@ const ListAdminCourse = () => {
         </Button>
       </Space>
 
+      <Card style={{ marginBottom: 16 }}>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Input.Search
+            placeholder="Search courses..."
+            allowClear
+            enterButton={
+              <Button 
+                type="primary" 
+                style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+              >
+                Search
+              </Button>
+            }
+            size="large"
+            value={localSearch}
+            onChange={handleSearchChange}
+            style={{ width: 300 }}
+            className="custom-search"
+          />
+          <Space wrap>
+            <Select
+              placeholder="Class"
+              allowClear
+              style={{ width: 200 }}
+              onChange={(value) => setFilters(prev => ({ ...prev, class: value }))}
+              value={filters.class}
+              className="custom-select"
+            >
+              <Option value="10">Class 10</Option>
+              <Option value="11">Class 11</Option>
+              <Option value="12">Class 12</Option>
+            </Select>
+            <Select
+              placeholder="Subject"
+              allowClear
+              style={{ width: 200 }}
+              onChange={(value) => setFilters(prev => ({ ...prev, subject: value }))}
+              value={filters.subject}
+              className="custom-select"
+            >
+              <Option value="Toán">Toán</Option>
+              <Option value="Lý">Lý</Option>
+              <Option value="Hóa">Hóa</Option>
+            </Select>
+            <Button 
+              onClick={() => {
+                setLocalSearch("");
+                setFilters({});
+                setSortField(undefined);
+                setSortOrder(undefined);
+              }}
+              style={{ 
+                borderColor: '#ff6a00',
+                color: '#ff6a00'
+              }}
+            >
+              Reset Filters
+            </Button>
+          </Space>
+        </Space>
+      </Card>
+
       <Table
         columns={columns}
-        dataSource={courses}
+        dataSource={listCourses.courses}
         rowKey="id"
         style={{ background: '#fff' }}
+        pagination={{
+          current: page,
+          pageSize: limit,
+          total: listCourses.pagination?.total || 0,
+          showSizeChanger: true,
+          showTotal: (total) => `Total ${total} items`,
+        }}
+        onChange={handleTableChange}
+        loading={isLoading}
       />
 
       <Modal

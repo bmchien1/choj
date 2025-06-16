@@ -1,6 +1,14 @@
 import axiosClient from "@/apis/config/axiosClient";
 import { Tag } from "@/apis/type";
 
+interface TagQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: 'ascend' | 'descend';
+}
+
 const tagService = {
   createTag: async (tag: Partial<Tag>): Promise<Tag> => {
     try {
@@ -22,9 +30,9 @@ const tagService = {
     }
   },
 
-  getTagsByCreator: async (creatorId: number): Promise<Tag[]> => {
+  getTagsByCreator: async (creatorId: number, params?: TagQueryParams): Promise<{ tags: Tag[]; pagination: any }> => {
     try {
-      const response = await axiosClient.get(`/api/tags/creator/${creatorId}`);
+      const response = await axiosClient.get(`/api/tags/creator/${creatorId}`, { params });
       return response.data;
     } catch (error) {
       console.error(`Error fetching tags for creator ${creatorId}:`, error);
@@ -70,6 +78,26 @@ const tagService = {
       console.error(`Error adding tag ${tagId} to question ${questionId}:`, error);
       throw error;
     }
+  },
+
+  getAll: async (params?: TagQueryParams): Promise<{ tags: Tag[]; pagination: any }> => {
+    const response = await axiosClient.get("/api/tags", { params });
+    return response.data;
+  },
+
+  getById: async (tagId: string): Promise<Tag> => {
+    const response = await axiosClient.get(`/api/tags/${tagId}`);
+    return response.data;
+  },
+
+  update: async (tagId: string, data: Partial<Tag>): Promise<Tag> => {
+    const response = await axiosClient.put(`/api/tags/${tagId}`, data);
+    return response.data;
+  },
+
+  delete: async (tagId: string): Promise<{ message: string }> => {
+    const response = await axiosClient.delete(`/api/tags/${tagId}`);
+    return response.data;
   },
 };
 

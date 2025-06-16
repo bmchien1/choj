@@ -3,10 +3,20 @@ import courseService from "@/apis/service/courseService";
 import { Course } from "@/apis/type";
 import toast from "react-hot-toast";
 
-export const useGetAllCourses = () => {
+interface CourseQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: 'ascend' | 'descend';
+  class?: string;
+  subject?: string;
+}
+
+export const useGetAllCourses = (params?: CourseQueryParams) => {
   return useQuery<{ courses: Course[]; pagination: any }>({
-    queryKey: ["courses"],
-    queryFn: courseService.getAll,
+    queryKey: ["courses", params],
+    queryFn: () => courseService.getAll(params),
   });
 };
 
@@ -18,10 +28,10 @@ export const useGetCourseById = (courseId: string) => {
   });
 };
 
-export const useGetCoursesByCreator = (creatorId: string) => {
-  return useQuery<Course[]>({
-    queryKey: ["courses", "creator", creatorId],
-    queryFn: () => courseService.getByCreator(creatorId),
+export const useGetCoursesByCreator = (creatorId: string, params?: CourseQueryParams) => {
+  return useQuery<{ courses: Course[]; pagination: any }>({
+    queryKey: ["courses", "creator", creatorId, params],
+    queryFn: () => courseService.getByCreator(creatorId, params),
     enabled: !!creatorId,
   });
 };

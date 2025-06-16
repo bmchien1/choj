@@ -15,16 +15,13 @@ export {default as AdminJoinCoursesPage} from "@/pages/AdminJoinCourses";
 export {default as TeacherCourseListPage} from "@/pages/TeacherCourse.tsx";
 export {default as TeacherJoinCoursesPage} from "@/pages/TeacherJoinCourses.tsx";
 
-export {default as CreateCoursePage} from "@/pages/CreateCourse.tsx";
 export {default as ViewLesson} from "@/pages/ViewLesson.tsx";
 
-export {default as CreateMatrixPage} from "@/pages/CreateMatrix.tsx";
-export {default as CreateQuestionPage} from "@/pages/CreateQuestion.tsx";
+
 export {default as AdminQuestionListPage} from "@/pages/AdminQuestion.tsx";
 export {default as TeacherQuestionListPage} from "@/pages/TeacherQuestion.tsx";
 export {default as TeacherMatrixListPage} from "@/pages/TeacherMatrix.tsx";
 
-export {default as CreateTagPage} from "@/pages/CreateTag.tsx";
 export {default as AdminTagListPage} from "@/pages/AdminTag.tsx";
 export {default as TeacherTagListPage} from "@/pages/TeacherTag.tsx";
 

@@ -1,35 +1,23 @@
-import { AdminCourseDetail, CreateCoursePage, CreateMatrixPage, CreateQuestionPage, CreateTagPage, SubmissionContest, SubmissionCourse, TeacherContestView, TeacherCourseListPage, TeacherJoinCoursesPage, TeacherMatrixListPage, TeacherQuestionListPage, TeacherTagListPage } from '@/pages';
+import { AdminCourseDetail, SubmissionContest, SubmissionCourse, TeacherContestView, TeacherCourseListPage, TeacherJoinCoursesPage, TeacherMatrixListPage, TeacherQuestionListPage, TeacherTagListPage } from '@/pages';
 import { ContestDetail } from '@/pages/ContestDetail';
   
   const teacherRoutes = {
-    createCourse: {
-      path: '/teacher/course/create',
-      component: CreateCoursePage
-    },
+  
     listTeacherCourse: {
       path: '/teacher/my-courses',
       component: TeacherCourseListPage
     },
-    createMatrix: {
-      path: '/teacher/matrix/create',
-      component: CreateMatrixPage
-    },
+   
     listTeacherMatrix: {
       path: '/teacher/my-matrices',
       component: TeacherMatrixListPage
     },
-    createQuestion: {
-      path: '/teacher/question/create',
-      component: CreateQuestionPage
-    },
+  
     listTeacherQuestion: {
       path: '/teacher/my-questions',
       component: TeacherQuestionListPage
     },
-    createTag: {
-      path: '/teacher/tag/create',
-      component: CreateTagPage
-    },
+    
     listTeacherTag: {
       path: '/teacher/my-tags',
       component: TeacherTagListPage

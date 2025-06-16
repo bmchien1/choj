@@ -1,9 +1,19 @@
 import axiosClient from "@/apis/config/axiosClient.ts";
 import { Course } from "../type";
 
+interface CourseQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: 'ascend' | 'descend';
+  class?: string;
+  subject?: string;
+}
+
 const courseService = {
-  getAll: async (): Promise<{ courses: Course[]; pagination: any }> => {
-    const response = await axiosClient.get("/api/courses");
+  getAll: async (params?: CourseQueryParams): Promise<{ courses: Course[]; pagination: any }> => {
+    const response = await axiosClient.get("/api/courses", { params });
     return response.data;
   },
 
@@ -12,8 +22,8 @@ const courseService = {
     return response.data;
   },
 
-  getByCreator: async (creatorId: string): Promise<Course[]> => {
-    const response = await axiosClient.get(`/api/courses/creator/${creatorId}`);
+  getByCreator: async (creatorId: string, params?: CourseQueryParams): Promise<{ courses: Course[]; pagination: any }> => {
+    const response = await axiosClient.get(`/api/courses/creator/${creatorId}`, { params });
     return response.data;
   },
 

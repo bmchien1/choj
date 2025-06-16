@@ -20,6 +20,7 @@ import {
   useCreateAssignmentSubmission,
   useBuildCode,
 } from "@/hooks/useSubmissionQueries";
+import assignmentService from "@/apis/service/assignmentService";
 import { GradingResult } from "@/apis/type";
 import toast from "react-hot-toast";
 import AceEditor from "react-ace";
@@ -50,80 +51,96 @@ const StudentAssignment: React.FC = () => {
     error,
   } = useGetAssignmentById(assignmentId || "");
   const [form] = Form.useForm();
-  const [buildResults, setBuildResults] = useState<{ [key: string]: string }>(
-    {}
-  );
-  const [gradingResults, setGradingResults] = useState<GradingResult | null>(
-    null
-  );
+  const [buildResults, setBuildResults] = useState<{ [key: string]: string }>({});
+  const [gradingResults, ] = useState<GradingResult | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedLanguages, setSelectedLanguages] = useState<{
-    [key: string]: string;
-  }>({});
+  const [selectedLanguages, setSelectedLanguages] = useState<{ [key: string]: string }>({});
   const [editorCodes, setEditorCodes] = useState<{ [key: string]: string }>({});
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [isTimeUpModalVisible, setIsTimeUpModalVisible] = useState(false);
-  const { mutate: createSubmission, isPending: isSubmitting } =
-    useCreateAssignmentSubmission();
+  const { mutate: createSubmission, isPending: isSubmitting } = useCreateAssignmentSubmission();
   const { mutate: buildCode, isPending: isBuilding } = useBuildCode();
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
+  const [attempt, setAttempt] = useState<any>(null);
+  const [isLoadingAttempt, setIsLoadingAttempt] = useState(true);
+
+  // Load attempt when component mounts
+  useEffect(() => {
+    const loadAttempt = async () => {
+      try {
+        const activeAttempt = await assignmentService.getActiveAttempt(assignmentId || "");
+        if (activeAttempt) {
+          setAttempt(activeAttempt);
+          // Update time left first
+          await assignmentService.updateTimeLeft(activeAttempt.id, activeAttempt.timeLeft);
+          setTimeLeft(activeAttempt.timeLeft);
+          setStartTime(new Date(activeAttempt.startTime).getTime());
+        } else {
+          // Start new attempt if none exists
+          const newAttempt = await assignmentService.startAttempt(assignmentId || "");
+          setAttempt(newAttempt);
+          setTimeLeft(newAttempt.timeLeft);
+          setStartTime(new Date(newAttempt.startTime).getTime());
+        }
+      } catch (error) {
+        console.error("Error loading attempt:", error);
+        toast.error("Failed to load assignment attempt");
+      } finally {
+        setIsLoadingAttempt(false);
+      }
+    };
+
+    if (assignmentId) {
+      loadAttempt();
+    }
+  }, [assignmentId]);
 
   // Timer logic
   useEffect(() => {
-    if (assignment?.duration) {
-      // Check if there's a saved start time
-      const savedStartTime = localStorage.getItem(`assignment_${assignmentId}_start_time`);
-      const savedTimeLeft = localStorage.getItem(`assignment_${assignmentId}_time_left`);
-      
-      if (savedStartTime && savedTimeLeft) {
-        // Calculate remaining time based on saved start time
-        const now = Date.now();
-        const elapsedTime = Math.floor((now - parseInt(savedStartTime)) / 1000);
-        const remainingTime = Math.max(0, parseInt(savedTimeLeft) - elapsedTime);
-        setTimeLeft(remainingTime);
-        setStartTime(parseInt(savedStartTime));
-      } else {
-        // First time starting the assignment
-        const now = Date.now();
-        const initialTime = assignment.duration * 60;
-        setTimeLeft(initialTime);
-        setStartTime(now);
-        localStorage.setItem(`assignment_${assignmentId}_start_time`, now.toString());
-        localStorage.setItem(`assignment_${assignmentId}_time_left`, initialTime.toString());
-      }
-
+    if (assignment?.duration && attempt && startTime) {
       const timer = setInterval(() => {
-        if (startTime) {
-          const now = Date.now();
-          const elapsedTime = Math.floor((now - startTime) / 1000);
-          const secondsLeft = Math.max(0, (assignment?.duration || 60) * 60 - elapsedTime);
-          setTimeLeft(secondsLeft);
-          localStorage.setItem(`assignment_${assignmentId}_time_left`, secondsLeft.toString());
+        const now = Date.now();
+        const elapsedTime = Math.floor((now - startTime) / 1000);
+        const secondsLeft = Math.max(0, (assignment?.duration || 60) * 60 - elapsedTime);
+        setTimeLeft(secondsLeft);
 
-          if (secondsLeft <= 60 && secondsLeft > 59) {
-            toast.error("1 minute remaining!");
-          }
+        if (secondsLeft <= 60 && secondsLeft > 59) {
+          toast.error("1 minute remaining!");
+        }
 
-          if (secondsLeft <= 0 && !isTimeUp) {
-            clearInterval(timer);
-            setIsTimeUp(true);
-            setIsTimeUpModalVisible(true);
-          }
+        if (secondsLeft <= 0 && !isTimeUp) {
+          clearInterval(timer);
+          setIsTimeUp(true);
+          setIsTimeUpModalVisible(true);
         }
       }, 1000);
 
       return () => clearInterval(timer);
     }
-  }, [assignment, form, startTime, assignmentId, isTimeUp]);
+  }, [assignment, startTime, attempt, isTimeUp]);
+
+  // Update time left periodically
+  useEffect(() => {
+    if (attempt && timeLeft !== null) {
+      const updateTimeLeft = async () => {
+        try {
+          await assignmentService.updateTimeLeft(attempt.id, timeLeft);
+        } catch (error) {
+          console.error("Error updating time left:", error);
+        }
+      };
+
+      const interval = setInterval(updateTimeLeft, 60000); // Update every minute
+      return () => clearInterval(interval);
+    }
+  }, [attempt, timeLeft]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+    return `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleBuild = (
@@ -162,41 +179,57 @@ const StudentAssignment: React.FC = () => {
   const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
 
   const handleSubmit = async (values: any) => {
-    // Clear saved time when submitting
-    localStorage.removeItem(`assignment_${assignmentId}_start_time`);
-    localStorage.removeItem(`assignment_${assignmentId}_time_left`);
-    setTimeLeft(0);
-    
-    const answers = Object.keys(values)
-      .map((key) => {
-        const questionId = key.replace("question-", "");
-        const sourceCode = editorCodes[questionId] || values[key];
-        return {
-          questionId: parseInt(questionId),
-          sourceCode,
-          language: selectedLanguages[questionId] || "javascript",
-        };
-      })
-      .filter((answer: { questionId: number; sourceCode: string; language: string }) => 
-        answer.sourceCode && answer.sourceCode.trim() !== ''
-      );
+    if (!attempt) {
+      toast.error("No active attempt found");
+      return;
+    }
 
-    createSubmission(
-      {
-        userId: user.id,
-        assignmentId: parseInt(assignmentId || "0"),
-        answers,
-      },
-      {
-        onSuccess: (data) => {
-          setGradingResults(data);
-          setIsModalVisible(true);
-        },
-        onError: (error) => {
-          toast.error(`Submission failed: ${error.message}`);
-        },
+    try {
+      // Submit the attempt first
+      await assignmentService.submitAttempt(attempt.id);
+      
+      // Collect all answers
+      const answers = Object.keys(values)
+        .map((key) => {
+          const questionId = key.replace("question-", "");
+          const sourceCode = editorCodes[questionId] || values[key];
+          return {
+            questionId: parseInt(questionId),
+            sourceCode,
+            language: selectedLanguages[questionId] || "python",
+          };
+        })
+        .filter((answer: { questionId: number; sourceCode: string; language: string }) => 
+          answer.sourceCode && answer.sourceCode.trim() !== ''
+        );
+
+      if (answers.length === 0) {
+        toast.error("Please provide at least one answer before submitting");
+        return;
       }
-    );
+
+      // Create submission
+      createSubmission(
+        {
+          userId: user.id,
+          assignmentId: parseInt(assignmentId || "0"),
+          answers,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Assignment submitted successfully. Results will be available soon.");
+            navigate(`/my-courses/${assignment?.course.id}`);
+          },
+          onError: (error: any) => {
+            console.error("Submission error:", error);
+            toast.error(`Submission failed: ${error.message || "Unknown error"}`);
+          },
+        }
+      );
+    } catch (error: any) {
+      console.error("Error submitting attempt:", error);
+      toast.error(`Failed to submit attempt: ${error.message || "Unknown error"}`);
+    }
   };
 
   const handleModalOk = () => {
@@ -244,7 +277,7 @@ const StudentAssignment: React.FC = () => {
     handleSubmit(form.getFieldsValue());
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingAttempt) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <Spin size="large" />
@@ -261,6 +294,13 @@ const StudentAssignment: React.FC = () => {
     );
   }
 
+  if (!attempt || timeLeft === null) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh', position: 'relative' }}>
@@ -388,7 +428,7 @@ const StudentAssignment: React.FC = () => {
                       >
                         <div className="space-y-4">
                           <Select
-                            defaultValue={question.language || "javascript"}
+                            defaultValue={question.language || "c_cpp"}
                             style={{ width: 120, borderColor: '#ff6a00' }}
                             onChange={(value) =>
                               setSelectedLanguages((prev) => ({
@@ -397,13 +437,13 @@ const StudentAssignment: React.FC = () => {
                               }))
                             }
                           >
+                            <Option value="cpp">C++</Option>
                             <Option value="java">Java</Option>
                             <Option value="python">Python</Option>
-                            <Option value="c_cpp">C/C++</Option>
                           </Select>
 
                           <AceEditor
-                            mode={selectedLanguages[question.id!.toString()] || question.language || "javascript"}
+                            mode={selectedLanguages[question.id!.toString()] || question.language || "python"}
                             theme="dracula"
                             name={`editor-${question.id}`}
                             width="100%"
@@ -486,6 +526,7 @@ const StudentAssignment: React.FC = () => {
                 type="primary"
                 htmlType="submit"
                 loading={isSubmitting}
+                disabled={isSubmitting || isTimeUp}
                 style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
               >
                 {isTimeUp ? 'Submit Now' : 'Submit Assignment'}

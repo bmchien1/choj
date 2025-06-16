@@ -9,6 +9,7 @@ import {
   GradingResult,
   BuildResponse,
   BuildRequest,
+  ContestSubmission,
 } from "@/apis/type";
 import toast from "react-hot-toast";
 
@@ -40,6 +41,30 @@ export const useGetSubmissionsByContest = (contestId: number) => {
     queryKey: ["submissions", "contest", contestId],
     queryFn: () => submissionService.getByContest(contestId),
     enabled: !!contestId,
+  });
+};
+
+export const useGetSubmissionsByUser = (userId: number) => {
+  return useQuery<Submission[]>({
+    queryKey: ["submissions", "user", userId],
+    queryFn: () => submissionService.getByUser(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetSubmissionsByAssignment = (assignmentId: number) => {
+  return useQuery<Submission[]>({
+    queryKey: ["submissions", "assignment", assignmentId],
+    queryFn: () => submissionService.getByAssignment(assignmentId),
+    enabled: !!assignmentId,
+  });
+};
+
+export const useGetSubmissionsByAssignmentAndUser = (assignmentId: number, userId: number) => {
+  return useQuery<Submission[]>({
+    queryKey: ["submissions", "assignment", assignmentId, "user", userId],
+    queryFn: () => submissionService.getByAssignmentAndUser(assignmentId, userId),
+    enabled: !!assignmentId && !!userId,
   });
 };
 
@@ -86,19 +111,25 @@ export const useGetSubmissionByHashAdmin = (hash: string) => {
 export const useCreateAssignmentSubmission = () => {
   const queryClient = useQueryClient();
   return useMutation<GradingResult, Error, AssignmentSubmission>({
-    mutationFn: (data) =>
-      axiosClient.post("/api/submissions", data).then((res) => {
-        console.log('API Response:', res.data);
-        return res.data;
-      }),
+    mutationFn: async (data) => {
+      try {
+        console.log('Creating submission with data:', data);
+        const response = await axiosClient.post("/api/submissions", data);
+        console.log('Submission response:', response.data);
+        return response.data;
+      } catch (error: any) {
+        console.error('Submission error:', error.response?.data || error);
+        throw new Error(error.response?.data?.message || error.message || "Failed to submit assignment");
+      }
+    },
     onSuccess: (data) => {
-      console.log('Mutation Success:', data);
+      console.log('Submission success:', data);
       queryClient.invalidateQueries({ queryKey: ["submissions"] });
       toast.success("Assignment submitted successfully");
     },
     onError: (error) => {
-      console.error('Mutation Error:', error);
-      toast.error("Failed to submit assignment");
+      console.error('Submission error:', error);
+      toast.error(error.message || "Failed to submit assignment");
     },
   });
 };
@@ -111,6 +142,16 @@ export const useBuildCode = () => {
     },
     onError: () => {
       toast.error("Failed to build code");
+    },
+  });
+};
+
+export const useCreateContestSubmission = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Submission, Error, ContestSubmission>({
+    mutationFn: (data) => submissionService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["submissions"] });
     },
   });
 };

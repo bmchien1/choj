@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import questionService from "@/apis/service/questionService";
 
 interface PaginatedQuestions {
-  questions: Question[];
+  questions: QuestionTable[];
   pagination: {
     page: number;
     limit: number;
@@ -13,24 +13,35 @@ interface PaginatedQuestions {
   };
 }
 
-export const useGetAllQuestions = (page: number = 1, limit: number = 10) => {
+interface QueryParams {
+  page: number;
+  limit: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: 'ascend' | 'descend';
+  difficulty?: string;
+  type?: string;
+  tags?: number[];
+}
+
+export const useGetAllQuestions = (params: QueryParams) => {
   return useQuery<PaginatedQuestions>({
-    queryKey: ["questions", page, limit],
-    queryFn: () => questionService.getAll({ page, limit }),
+    queryKey: ["questions", params],
+    queryFn: () => questionService.getAll(params),
   });
 };
 
 export const useGetQuestionsByCreator = (
   creatorId: number,
-  page: number = 1,
-  limit: number = 10
+  params: QueryParams
 ) => {
-  return useQuery<QuestionTable[]>({
-    queryKey: ["questions", creatorId, page, limit],
+  return useQuery<PaginatedQuestions>({
+    queryKey: ["questions", creatorId, params],
     queryFn: async () => {
-      const response = await questionService.getByCreator(creatorId, { page, limit });
+      const response = await questionService.getByCreator(creatorId, params);
       const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
-      return response.questions.map((q: Question) => ({
+      return {
+        questions: response.questions.map((q: Question) => ({
         id: q.id!,
         questionName: q.questionName,
         questionType: q.questionType,
@@ -38,7 +49,9 @@ export const useGetQuestionsByCreator = (
         difficulty_level: q.difficulty_level,
         creatorName: user.email || '',
         tags: q.tags || []
-      }));
+        })),
+        pagination: response.pagination
+      };
     },
     enabled: !!creatorId,
   });

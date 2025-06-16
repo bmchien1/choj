@@ -3,18 +3,34 @@ import tagService from "@/apis/service/tagService";
 import { Tag } from "@/apis/type";
 import toast from "react-hot-toast";
 
-export const useGetAllTags = () => {
-  return useQuery<Tag[]>({
-    queryKey: ["tags"],
-    queryFn: tagService.getAllTags,
+interface TagQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: 'ascend' | 'descend';
+}
+
+export const useGetAllTags = (params?: TagQueryParams) => {
+  return useQuery<{ tags: Tag[]; pagination: any }>({
+    queryKey: ["tags", params],
+    queryFn: () => tagService.getAll(params),
   });
 };
 
-export const useGetTagsByCreator = (creatorId: number) => {
-  return useQuery<Tag[]>({
-    queryKey: ["tags", creatorId],
-    queryFn: () => tagService.getTagsByCreator(creatorId),
+export const useGetTagsByCreator = (creatorId: number, params?: TagQueryParams) => {
+  return useQuery<{ tags: Tag[]; pagination: any }>({
+    queryKey: ["tags", "creator", creatorId, params],
+    queryFn: () => tagService.getTagsByCreator(creatorId, params),
     enabled: !!creatorId,
+  });
+};
+
+export const useGetTagById = (tagId: string) => {
+  return useQuery<Tag>({
+    queryKey: ["tag", tagId],
+    queryFn: () => tagService.getById(tagId),
+    enabled: !!tagId,
   });
 };
 
@@ -34,10 +50,11 @@ export const useCreateTag = () => {
 
 export const useUpdateTag = () => {
   const queryClient = useQueryClient();
-  return useMutation<Tag, Error, { tagId: number; data: Partial<Tag> }>({
-    mutationFn: ({ tagId, data }) => tagService.updateTag(tagId, data),
-    onSuccess: () => {
+  return useMutation<Tag, Error, { tagId: string; data: Partial<Tag> }>({
+    mutationFn: ({ tagId, data }) => tagService.update(tagId, data),
+    onSuccess: (updatedTag) => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: ["tag", updatedTag.id] });
       toast.success("Tag updated successfully");
     },
     onError: () => {
@@ -48,8 +65,8 @@ export const useUpdateTag = () => {
 
 export const useDeleteTag = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: tagService.deleteTag,
+  return useMutation<{ message: string }, Error, string>({
+    mutationFn: tagService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
       toast.success("Tag deleted successfully");

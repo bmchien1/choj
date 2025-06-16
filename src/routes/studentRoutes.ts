@@ -12,6 +12,7 @@ import {
 	StudentContestView,
 	ContestPage,
 } from '@/pages';
+import ContestAccess from '@/pages/ContestAccess';
 
 import Home from '@/pages/HomePage';
 import StudentAssignment from '@/pages/StudentAssignment';
@@ -59,6 +60,10 @@ const studentRoutes = {
 		path: '/do-contest/:id',
 		component: ContestPage
 	},
+	doContestPrivate:{
+		path: '/contests/access/:url',
+		component: ContestAccess
+	}
 	// // problems: {
 	// // 	path: '/my-problems/:contestId',
 	// // 	component: UserProblemListPage,

@@ -1,41 +1,51 @@
-import axiosClient from "@/apis/config/axiosClient.ts";
+import axiosClient from "@/apis/config/axiosClient";
 import { Matrix } from "../type";
 
-interface MatrixCreate {
-  name: string;
-  description?: string;
-  total_points?: number;
-  criteria: {
-    questionType: string;
-    difficulty_level: string;
-    tagIds: number[];
-    percentage: number;
-  }[];
+interface MatrixQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: 'ascend' | 'descend';
 }
 
 const matrixService = {
-  getByUser: async (userId: string): Promise<Matrix[]> => {
-    const response = await axiosClient.get(`/api/matrix/${userId}`);
+  getAll: async (params?: MatrixQueryParams): Promise<{ matrices: Matrix[]; pagination: any }> => {
+    const response = await axiosClient.get("/api/matrix", { params });
+    return response.data;
+  },
+
+  getByUser: async (userId: string, params?: MatrixQueryParams): Promise<{ matrices: Matrix[]; pagination: any }> => {
+    const response = await axiosClient.get(`/api/matrix/${userId}`, { params });
     return response.data;
   },
 
   getById: async (matrixId: string): Promise<Matrix> => {
-    const response = await axiosClient.get(`/api/matrix/single/${matrixId}`);
+    const response = await axiosClient.get(`/api/matrix/${matrixId}`);
     return response.data;
   },
 
-  create: async (userId: string, data: MatrixCreate): Promise<Matrix> => {
-    const response = await axiosClient.post(`/api/matrix/${userId}`, data);
+  create: async (data: Partial<Matrix>): Promise<Matrix> => {
+    const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    const response = await axiosClient.post(`/api/matrix/${user.id}`, data);
     return response.data;
   },
 
-  update: async (matrixId: string, data: Partial<MatrixCreate>): Promise<Matrix> => {
+  update: async (matrixId: string, data: Partial<Matrix>): Promise<Matrix> => {
     const response = await axiosClient.put(`/api/matrix/${matrixId}`, data);
     return response.data;
   },
 
   delete: async (matrixId: string): Promise<{ message: string }> => {
     const response = await axiosClient.delete(`/api/matrix/${matrixId}`);
+    return response.data;
+  },
+
+  checkAssignment: async (courseId: string, matrixId: string, userId: string): Promise<{ isValid: boolean; message?: string }> => {
+    const response = await axiosClient.post(`/api/matrix/${matrixId}/check`, {
+      courseId,
+      userId,
+    });
     return response.data;
   },
 };

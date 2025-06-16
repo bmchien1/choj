@@ -1,4 +1,3 @@
-
 export interface Choice {
   choice: string;
 }
@@ -52,6 +51,14 @@ export interface Contest {
   duration: number;
   creator: User;
   questions?: Question[];
+  attempts?: Array<{
+    id: number;
+    userId: number;
+    isSubmitted: boolean;
+    startTime: Date;
+    endTime?: Date;
+    timeLeft: number;
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +66,7 @@ export interface Contest {
 export interface Tag {
   id: number;
   name: string;
+  description?: string;
   creatorId: number;
   creatorName: string;
 }
@@ -248,16 +256,18 @@ export interface JoinCourseRequest {
 
 export interface Submission {
   submissionHash: string;
-  submissionDate: string;
-  status: "passed" | "failed" | "pending";
+  status: string;
   message: string;
   error: string;
   point: number;
   testCasePassed: number;
-  testCases: number[];
+  testCases: number;
   languageId: number;
   user: {
     email: string;
+  };
+  assignment?: {
+    id: number;
   };
 }
 
@@ -334,4 +344,18 @@ export interface CreateContestData {
 export interface UpdateContestData extends Omit<CreateContestData, 'userId'> {
   id: number;
   questions_scores?: { [key: number]: number };
+}
+
+export interface ContestSubmission {
+  userId: number;
+  contestId: number;
+  testId: number;
+  problemId: number;
+  languageId: number;
+  sourceCode: string;
+  answers: Array<{
+    questionId: number;
+    sourceCode: string;
+    language: string;
+  }>;
 }

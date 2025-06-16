@@ -1,20 +1,75 @@
-import { Button, Form, Input, Modal, Table, Typography, Space } from "antd";
+import { Button, Form, Input, Modal, Table, Typography, Space, Card, Select } from "antd";
 import { useNavigate } from "react-router-dom";
 import { HiPencilAlt } from "react-icons/hi";
 import { BiTrash } from "react-icons/bi";
 import { PlusOutlined, EyeOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useGetCoursesByCreator, useDeleteCourse, useCreateCourse, useUpdateCourse } from "@/hooks/useCourseQueries";
 import { Course } from "@/apis/type";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
+import debounce from "lodash/debounce";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Paragraph } = Typography;
+const { Option } = Select;
 
 const ListTeacherCourse = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
   const creatorId = user.id;
-  const { data: listCourses = [], isLoading } = useGetCoursesByCreator(creatorId);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [localSearch, setLocalSearch] = useState("");
+  const [apiSearch, setApiSearch] = useState("");
+  const [sortField, setSortField] = useState<string>();
+  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend'>();
+  const [filters, setFilters] = useState<{
+    class?: string;
+    subject?: string;
+  }>({});
+
+  const { data: listCourses = { courses: [], pagination: { total: 0 } }, isLoading } = useGetCoursesByCreator(creatorId, {
+    page,
+    limit,
+    search: apiSearch,
+    sortField,
+    sortOrder,
+    class: filters.class,
+    subject: filters.subject
+  });
+
+  // Get unique classes and subjects from courses
+  const uniqueClasses = useMemo(() => {
+    const classes = new Set(listCourses.courses.map(course => course.class));
+    return Array.from(classes).sort();
+  }, [listCourses.courses]);
+
+  const uniqueSubjects = useMemo(() => {
+    const subjects = new Set(listCourses.courses.map(course => course.subject));
+    return Array.from(subjects).sort();
+  }, [listCourses.courses]);
+
+  // Debounced search function
+  const debouncedSetApiSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        setApiSearch(value);
+      }, 500),
+    []
+  );
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSetApiSearch.cancel();
+    };
+  }, [debouncedSetApiSearch]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocalSearch(value);
+    debouncedSetApiSearch(value);
+  };
+
   const deleteCourse = useDeleteCourse();
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
@@ -78,10 +133,18 @@ const ListTeacherCourse = () => {
 
       await createCourse.mutateAsync(courseData);
       form.resetFields();
+      setModalState({ type: null, course: null });
       toast.success("Course created successfully");
     } catch (error: any) {
       toast.error(error.message || "Failed to create course");
     }
+  };
+
+  const handleTableChange = (pagination: any, sorter: any) => {
+    setPage(pagination.current);
+    setLimit(pagination.pageSize);
+    setSortField(sorter.field);
+    setSortOrder(sorter.order);
   };
 
   const columns = [
@@ -89,6 +152,7 @@ const ListTeacherCourse = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      sorter: true,
     },
     {
       title: 'Description',
@@ -140,8 +204,6 @@ const ListTeacherCourse = () => {
     },
   ];
 
-  if (isLoading) return <div style={{ padding: 24 }}><Text>Loading...</Text></div>;
-
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
       <Space style={{ marginBottom: 16 }} align="center">
@@ -156,11 +218,82 @@ const ListTeacherCourse = () => {
         </Button>
       </Space>
 
+      <Card style={{ marginBottom: 16 }}>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Input.Search
+            placeholder="Search courses..."
+            allowClear
+            enterButton={
+              <Button 
+                type="primary" 
+                style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+              >
+                Search
+              </Button>
+            }
+            size="large"
+            value={localSearch}
+            onChange={handleSearchChange}
+            style={{ width: 300 }}
+            className="custom-search"
+          />
+          <Space wrap>
+            <Select
+              placeholder="Class"
+              allowClear
+              style={{ width: 200 }}
+              onChange={(value) => setFilters(prev => ({ ...prev, class: value }))}
+              value={filters.class}
+              className="custom-select"
+            >
+              {uniqueClasses.map(cls => (
+                <Option key={cls} value={cls}>Class {cls}</Option>
+              ))}
+            </Select>
+            <Select
+              placeholder="Subject"
+              allowClear
+              style={{ width: 200 }}
+              onChange={(value) => setFilters(prev => ({ ...prev, subject: value }))}
+              value={filters.subject}
+              className="custom-select"
+            >
+              {uniqueSubjects.map(subject => (
+                <Option key={subject} value={subject}>{subject}</Option>
+              ))}
+            </Select>
+            <Button 
+              onClick={() => {
+                setLocalSearch("");
+                setFilters({});
+                setSortField(undefined);
+                setSortOrder(undefined);
+              }}
+              style={{ 
+                borderColor: '#ff6a00',
+                color: '#ff6a00'
+              }}
+            >
+              Reset Filters
+            </Button>
+          </Space>
+        </Space>
+      </Card>
+
       <Table
         columns={columns}
-        dataSource={listCourses}
+        dataSource={listCourses.courses}
         rowKey="id"
         style={{ background: '#fff' }}
+        pagination={{
+          current: page,
+          pageSize: limit,
+          total: listCourses.pagination?.total || 0,
+          showSizeChanger: true,
+          showTotal: (total) => `Total ${total} items`,
+        }}
+        onChange={handleTableChange}
+        loading={isLoading}
       />
 
       <Modal

@@ -27,10 +27,37 @@ const questionService = {
     }
   },
 
-  getAll: async ({ page, limit }: { page: number; limit: number }) => {
+  getAll: async ({ 
+    page, 
+    limit,
+    search,
+    sortField,
+    sortOrder,
+    difficulty,
+    type,
+    tags
+  }: { 
+    page: number; 
+    limit: number;
+    search?: string;
+    sortField?: string;
+    sortOrder?: 'ascend' | 'descend';
+    difficulty?: string;
+    type?: string;
+    tags?: number[];
+  }) => {
     try {
       const response = await axiosClient.get("/api/questions", {
-        params: { page, limit },
+        params: { 
+          page, 
+          limit,
+          search,
+          sortField,
+          sortOrder,
+          difficulty,
+          type,
+          tags
+        },
       });
       return response.data;
     } catch (error) {
@@ -41,11 +68,38 @@ const questionService = {
 
   getByCreator: async (
     creatorId: number,
-    { page, limit }: { page: number; limit: number }
+    { 
+      page, 
+      limit,
+      search,
+      sortField,
+      sortOrder,
+      difficulty,
+      type,
+      tags
+    }: { 
+      page: number; 
+      limit: number;
+      search?: string;
+      sortField?: string;
+      sortOrder?: 'ascend' | 'descend';
+      difficulty?: string;
+      type?: string;
+      tags?: number[];
+    }
   ) => {
     try {
       const response = await axiosClient.get(`/api/questions/${creatorId}`, {
-        params: { page, limit },
+        params: { 
+          page, 
+          limit,
+          search,
+          sortField,
+          sortOrder,
+          difficulty,
+          type,
+          tags
+        },
       });
       return response.data;
     } catch (error) {

@@ -3,6 +3,17 @@ import matrixService from "@/apis/service/matrixService";
 import { Matrix } from "@/apis/type";
 import toast from "react-hot-toast";
 
+interface MatrixQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: 'ascend' | 'descend';
+  difficulty?: string;
+  type?: string;
+  tags?: number[];
+}
+
 interface MatrixCreate {
   name: string;
   description?: string;
@@ -15,10 +26,24 @@ interface MatrixCreate {
   }[];
 }
 
-export const useGetMatricesByUser = (userId: string) => {
-  return useQuery<Matrix[]>({
-    queryKey: ["matrices", userId],
-    queryFn: () => matrixService.getByUser(userId),
+export const useGetAllMatrices = (params?: MatrixQueryParams) => {
+  return useQuery<{ matrices: Matrix[]; pagination: any }>({
+    queryKey: ["matrices", params],
+    queryFn: () => matrixService.getAll(params),
+  });
+};
+
+export const useGetMatricesByUser = (userId: string, params?: MatrixQueryParams) => {
+  return useQuery<{ matrices: Matrix[]; pagination: any }>({
+    queryKey: ["matrices", "user", userId, params],
+    queryFn: async () => {
+      const response = await matrixService.getByUser(userId, params);
+      console.log('API Response:', response);
+      return {
+        matrices: Array.isArray(response) ? response : [],
+        pagination: { total: Array.isArray(response) ? response.length : 0 }
+      };
+    },
     enabled: !!userId,
   });
 };
@@ -33,10 +58,10 @@ export const useGetMatrixById = (matrixId: string) => {
 
 export const useCreateMatrix = () => {
   const queryClient = useQueryClient();
-  return useMutation<Matrix, Error, { userId: string; data: MatrixCreate }>({
-    mutationFn: ({ userId, data }) => matrixService.create(userId, data),
-    onSuccess: (_, { userId }) => {
-      queryClient.invalidateQueries({ queryKey: ["matrices", userId] });
+  return useMutation<Matrix, Error, Partial<Matrix>>({
+    mutationFn: matrixService.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["matrices"] });
       toast.success("Matrix created successfully");
     },
     onError: () => {
@@ -47,15 +72,11 @@ export const useCreateMatrix = () => {
 
 export const useUpdateMatrix = () => {
   const queryClient = useQueryClient();
-  return useMutation<
-    Matrix,
-    Error,
-    { matrixId: string; data: Partial<MatrixCreate> }
-  >({
+  return useMutation<Matrix, Error, { matrixId: string; data: Partial<Matrix> }>({
     mutationFn: ({ matrixId, data }) => matrixService.update(matrixId, data),
-    onSuccess: (_updatedMatrix, { matrixId }) => {
+    onSuccess: (updatedMatrix) => {
       queryClient.invalidateQueries({ queryKey: ["matrices"] });
-      queryClient.invalidateQueries({ queryKey: ["matrix", matrixId] });
+      queryClient.invalidateQueries({ queryKey: ["matrix", updatedMatrix.id] });
       toast.success("Matrix updated successfully");
     },
     onError: () => {
@@ -75,5 +96,11 @@ export const useDeleteMatrix = () => {
     onError: () => {
       toast.error("Failed to delete matrix");
     },
+  });
+};
+
+export const useCheckMatrixAssignment = () => {
+  return useMutation<{ isValid: boolean }, Error, { matrixId: string; courseId: string; userId: string }>({
+    mutationFn: ({ matrixId, courseId, userId }) => matrixService.checkAssignment(matrixId, courseId, userId),
   });
 };

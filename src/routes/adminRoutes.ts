@@ -1,4 +1,5 @@
-import { AdminContestView, AdminCourseDetail, AdminCourseListPage,AdminJoinCoursesPage,AdminQuestionListPage,AdminSubmission,AdminTagListPage,CreateCoursePage, CreateQuestionPage, CreateTagPage, SubmissionCourse, SubmissionContest, UserListPage } from "@/pages";
+import { AdminContestView, AdminCourseDetail, AdminCourseListPage,AdminJoinCoursesPage,AdminQuestionListPage,AdminSubmission,AdminTagListPage, SubmissionCourse, SubmissionContest, UserListPage } from "@/pages";
+import ListAdminMatrix from "@/pages/AdminMatrix";
 
 const adminRoutes = {
 
@@ -6,10 +7,7 @@ const adminRoutes = {
 		path: '/admin/users',
 		component: UserListPage,
 	},
-	createCourse: {
-		path: '/admin/course/create',
-		component: CreateCoursePage,
-	},
+	
 	listAdminCourse: {
 		path: '/admin/courses',
 		component: AdminCourseListPage
@@ -19,19 +17,13 @@ const adminRoutes = {
 		component: AdminCourseDetail
 	},
 	
-	createQuestion: {
-		path: '/admin/question/create',
-		component: CreateQuestionPage,
-	},
+	
 	listAdminQuestion: {
 		path: '/admin/questions',
 		component: AdminQuestionListPage
 	},
 
-	createTag: {
-		path: '/admin/tag/create',
-		component: CreateTagPage,
-	},
+
 	listAdminTag: {
 		path: '/admin/tags',
 		component: AdminTagListPage
@@ -56,7 +48,11 @@ const adminRoutes = {
 	submissionContest:{
 		path: '/admin/submission/contest/:id',
 		component: SubmissionContest
-	},
+	},   
+	 listAdminMatrix: {
+		path: '/admin/matrices',
+		component: ListAdminMatrix
+	  },
 	// createContest: {
 	// 	path: '/admin/contest/create',
 	// 	component: CreateContestPage,

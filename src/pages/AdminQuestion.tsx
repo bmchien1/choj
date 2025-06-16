@@ -25,7 +25,7 @@ import {
   useDeleteQuestion,
 } from "@/hooks/useQuestionQueries";
 import { useGetAllTags, useAddTagToQuestion } from "@/hooks/useTagQueries";
-import { Question, Choice, Tag } from "@/apis/type";
+import { Question, Choice, Tag, QuestionTable } from "@/apis/type";
 import { MinusCircleOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -44,10 +44,18 @@ const ListAdminQuestion = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState<string>();
+  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend'>();
+  const [filters, setFilters] = useState<{
+    difficulty?: string;
+    type?: string;
+    tags?: number[];
+  }>({});
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [modalState, setModalState] = useState<{
     type: "edit" | "delete" | null;
-    question: Question | null;
+    question: QuestionTable | null;
   }>({ type: null, question: null });
   const [questionType, setQuestionType] = useState<string>("multiple-choice");
   const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(
@@ -56,11 +64,17 @@ const ListAdminQuestion = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
 
-  const { data: paginatedQuestions, isLoading } = useGetAllQuestions(
+  const { data: paginatedQuestions, isLoading } = useGetAllQuestions({
     page,
-    limit
-  );
-  const { data: tags = [] } = useGetAllTags();
+    limit,
+    search,
+    sortField,
+    sortOrder,
+    difficulty: filters.difficulty,
+    type: filters.type,
+    tags: filters.tags
+  });
+  const { data: tags = { tags: [], pagination: { total: 0 } } } = useGetAllTags();
   const createQuestionMutation = useCreateQuestion();
   const updateQuestionMutation = useUpdateQuestion();
   const deleteQuestionMutation = useDeleteQuestion();
@@ -79,7 +93,6 @@ const ListAdminQuestion = () => {
         memoryLimit: 0,
         maxPoint: 0,
         testCases: [],
-        language: null,
         correctAnswer: null,
         choices: null,
       };
@@ -100,7 +113,6 @@ const ListAdminQuestion = () => {
           break;
         case "coding":
           specificData = {
-            language: values.language,
             memoryLimit: values.memoryLimit,
             cpuTimeLimit: values.cpuTimeLimit,
             templateCode: values.templateCode,
@@ -161,7 +173,6 @@ const ListAdminQuestion = () => {
           break;
         case "coding":
           specificData = {
-            language: values.language,
             memoryLimit: values.memoryLimit,
             cpuTimeLimit: values.cpuTimeLimit,
             templateCode: values.templateCode,
@@ -212,6 +223,36 @@ const ListAdminQuestion = () => {
   const handleQuestionTypeChange = (value: string) => {
     setQuestionType(value);
     setCorrectAnswerIndex(null);
+    
+    // Reset form fields based on question type
+    if (value === "multiple-choice") {
+      form.setFieldsValue({
+        choices: undefined,
+        correctAnswer: undefined,
+        cpuTimeLimit: undefined,
+        memoryLimit: undefined,
+        templateCode: undefined,
+        testCases: undefined
+      });
+    } else if (value === "short-answer") {
+      form.setFieldsValue({
+        choices: undefined,
+        correctAnswer: undefined,
+        cpuTimeLimit: undefined,
+        memoryLimit: undefined,
+        templateCode: undefined,
+        testCases: undefined
+      });
+    } else if (value === "coding") {
+      form.setFieldsValue({
+        choices: undefined,
+        correctAnswer: undefined,
+        cpuTimeLimit: 0,
+        memoryLimit: 0,
+        templateCode: "",
+        testCases: []
+      });
+    }
   };
 
   const handleCorrectAnswerChange = (index: number) => {
@@ -224,6 +265,7 @@ const ListAdminQuestion = () => {
       dataIndex: "questionName",
       key: "questionName",
       render: (text: string) => <span>{text}</span>,
+      sorter: true,
     },
     {
       title: "Type",
@@ -268,7 +310,7 @@ const ListAdminQuestion = () => {
     {
       title: "Action",
       key: "action",
-      render: (_: any, record: Question) => (
+      render: (_: any, record: QuestionTable) => (
         <Flex gap={2}>
           <div
             className="cursor-pointer hover:text-blue-500"
@@ -293,9 +335,8 @@ const ListAdminQuestion = () => {
                     choice.choice === record.correctAnswer,
                 })),
                 correctAnswer: record.correctAnswer,
-                language: record.language,
-                memoryLimit: record.memoryLimit,
                 cpuTimeLimit: record.cpuTimeLimit,
+                memoryLimit: record.memoryLimit,
                 templateCode: record.templateCode,
                 testCases: record.testCases?.map((tc) => ({
                   input: tc.input,
@@ -317,6 +358,18 @@ const ListAdminQuestion = () => {
     },
   ];
 
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    setPage(pagination.current);
+    setLimit(pagination.pageSize);
+    setSortField(sorter.field);
+    setSortOrder(sorter.order);
+    setFilters({
+      difficulty: filters.difficulty_level?.[0],
+      type: filters.questionType?.[0],
+      tags: filters.tags
+    });
+  };
+
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
       <Space style={{ marginBottom: 16 }} align="center">
@@ -324,12 +377,125 @@ const ListAdminQuestion = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => setShowCreateForm(!showCreateForm)}
+          onClick={() => {
+            setShowCreateForm(!showCreateForm);
+            if (!showCreateForm) {
+              form.resetFields();
+              setQuestionType("multiple-choice");
+              setCorrectAnswerIndex(null);
+            }
+          }}
           style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
         >
           {showCreateForm ? "Cancel" : "Create New Question"}
         </Button>
       </Space>
+
+      <Card style={{ marginBottom: 16 }}>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Input.Search
+            placeholder="Search questions..."
+            allowClear
+            enterButton="Search"
+            size="large"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onSearch={(value) => setSearch(value)}
+            style={{ width: 300 }}
+            className="custom-search"
+          />
+          <Space wrap>
+            <Select
+              placeholder="Question Type"
+              allowClear
+              style={{ width: 200 }}
+              onChange={(value) => setFilters(prev => ({ ...prev, type: value }))}
+              value={filters.type}
+              className="custom-select"
+            >
+              <Option value="multiple-choice">Multiple Choice</Option>
+              <Option value="short-answer">Short Answer</Option>
+              <Option value="coding">Coding</Option>
+            </Select>
+            <Select
+              placeholder="Difficulty Level"
+              allowClear
+              style={{ width: 200 }}
+              onChange={(value) => setFilters(prev => ({ ...prev, difficulty: value }))}
+              value={filters.difficulty}
+              className="custom-select"
+            >
+              <Option value="Easy">Easy</Option>
+              <Option value="Medium">Medium</Option>
+              <Option value="Hard">Hard</Option>
+            </Select>
+            <Select
+              placeholder="Tags"
+              allowClear
+              mode="multiple"
+              style={{ width: 300 }}
+              onChange={(value) => setFilters(prev => ({ ...prev, tags: value }))}
+              value={filters.tags}
+              className="custom-select"
+            >
+              {tags.tags.map(tag => (
+                <Option key={tag.id} value={tag.id}>{tag.name}</Option>
+              ))}
+            </Select>
+            <Button 
+              onClick={() => {
+                setSearch("");
+                setFilters({});
+                setSortField(undefined);
+                setSortOrder(undefined);
+              }}
+              style={{ 
+                borderColor: '#ff6a00',
+                color: '#ff6a00'
+              }}
+            >
+              Reset Filters
+            </Button>
+          </Space>
+        </Space>
+      </Card>
+
+      <style>
+        {`
+          .custom-search .ant-input-affix-wrapper:hover,
+          .custom-search .ant-input-affix-wrapper-focused {
+            border-color: #ff6a00 !important;
+            box-shadow: 0 0 0 2px rgba(255, 106, 0, 0.2) !important;
+          }
+          .custom-search .ant-input-search-button {
+            background-color: #ff6a00 !important;
+            border-color: #ff6a00 !important;
+          }
+          .custom-search .ant-input-search-button:hover {
+            background-color: #e65c00 !important;
+            border-color: #e65c00 !important;
+          }
+          .custom-select .ant-select-selector:hover,
+          .custom-select.ant-select-focused .ant-select-selector {
+            border-color: #ff6a00 !important;
+            box-shadow: 0 0 0 2px rgba(255, 106, 0, 0.2) !important;
+          }
+          .custom-select .ant-select-arrow {
+            color: #ff6a00 !important;
+          }
+          .custom-select .ant-select-selection-item {
+            background-color: #fff1e6 !important;
+            border-color: #ff6a00 !important;
+            color: #ff6a00 !important;
+          }
+          .custom-select .ant-select-selection-item-remove {
+            color: #ff6a00 !important;
+          }
+          .custom-select .ant-select-selection-item-remove:hover {
+            color: #e65c00 !important;
+          }
+        `}
+      </style>
 
       {showCreateForm && (
         <Card 
@@ -393,7 +559,7 @@ const ListAdminQuestion = () => {
               ]}
             >
               <Select mode="multiple" placeholder="Select tags">
-                {tags.map((tag) => (
+                {tags.tags.map((tag) => (
                   <Option key={tag.id} value={tag.id}>
                     {tag.name}
                   </Option>
@@ -463,19 +629,6 @@ const ListAdminQuestion = () => {
             )}
             {questionType === "coding" && (
               <>
-                <Form.Item
-                  name="language"
-                  label="Programming Language"
-                  rules={[
-                    { required: true, message: "Please select a language" },
-                  ]}
-                >
-                  <Select placeholder="Select language">
-                    <Option value="javascript">JavaScript</Option>
-                    <Option value="python">Python</Option>
-                    <Option value="java">Java</Option>
-                  </Select>
-                </Form.Item>
                 <Form.Item
                   name="cpuTimeLimit"
                   label="CPU Time Limit (ms)"
@@ -583,12 +736,11 @@ const ListAdminQuestion = () => {
         pagination={{
           current: page,
           pageSize: limit,
-          total: paginatedQuestions?.pagination.total || 0,
-          onChange: (newPage, newPageSize) => {
-            setPage(newPage);
-            setLimit(newPageSize);
-          },
+          total: paginatedQuestions?.pagination?.total || 0,
+          showSizeChanger: true,
+          showTotal: (total) => `Total ${total} items`,
         }}
+        onChange={handleTableChange}
       />
 
       <Modal
@@ -653,7 +805,7 @@ const ListAdminQuestion = () => {
               ]}
             >
               <Select mode="multiple" placeholder="Select tags">
-                {tags.map((tag) => (
+                {tags.tags.map((tag) => (
                   <Option key={tag.id} value={tag.id}>
                     {tag.name}
                   </Option>
@@ -723,19 +875,6 @@ const ListAdminQuestion = () => {
             )}
             {questionType === "coding" && (
               <>
-                <Form.Item
-                  name="language"
-                  label="Programming Language"
-                  rules={[
-                    { required: true, message: "Please select a language" },
-                  ]}
-                >
-                  <Select placeholder="Select language">
-                    <Option value="javascript">JavaScript</Option>
-                    <Option value="python">Python</Option>
-                    <Option value="java">Java</Option>
-                  </Select>
-                </Form.Item>
                 <Form.Item
                   name="cpuTimeLimit"
                   label="CPU Time Limit (ms)"
