@@ -458,7 +458,7 @@ export const ContestPage: React.FC = () => {
                                             mode={
                                                 selectedLanguages[question.id?.toString() || ''] ||
                                                 question.language ||
-                                                'javascript'
+                                                'cpp'
                                             }
                                             theme="dracula"
                                             name={`editor-${question.id}`}
@@ -509,7 +509,7 @@ export const ContestPage: React.FC = () => {
                                                         input,
                                                         selectedLanguages[question.id?.toString() || ''] ||
                                                             question.language ||
-                                                            'javascript'
+                                                            'cpp'
                                                     );
                                                 }}
                                                 style={{ marginTop: 8 }}
