@@ -38,7 +38,7 @@ const { TextArea } = Input;
 const languageMap: { [key: string]: number } = {
     'python': 1,
     'java': 2,
-    'c_cpp': 3
+    'cpp': 3
 };
 
 const steps = [
@@ -440,7 +440,7 @@ export const ContestPage: React.FC = () => {
                                     <Form.Item name={`question_${question.id}`}>
                                         <div style={{ marginBottom: 8 }}>
                                             <Select
-                                                defaultValue={question.language || 'c_cpp'}
+                                                defaultValue={question.language || 'cpp'}
                                                 style={{ width: 120, marginBottom: 8 }}
                                                 onChange={(value) =>
                                                     setSelectedLanguages((prev) => ({
@@ -449,7 +449,7 @@ export const ContestPage: React.FC = () => {
                                                     }))
                                                 }
                                             >
-                                                <Select.Option value="c_cpp">C++</Select.Option>
+                                                <Select.Option value="cpp">C++</Select.Option>
                                                 <Select.Option value="java">Java</Select.Option>
                                                 <Select.Option value="python">Python</Select.Option>
                                             </Select>
