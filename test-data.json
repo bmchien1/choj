@@ -1,0 +1,37 @@
+{
+    "success": true,
+    "score": 1,
+    "totalTests": 3,
+    "results": [
+        {
+            "testCase": 1,
+            "verdict": "Accepted",
+            "passed": true,
+            "input": "",
+            "expectedOutput": "Hello",
+            "actualOutput": "Hello",
+            "error": "",
+            "executionTime": "0.035s"
+        },
+        {
+            "testCase": 2,
+            "verdict": "Wrong Answer",
+            "passed": false,
+            "input": "",
+            "expectedOutput": "Hello 1",
+            "actualOutput": "Hello",
+            "error": "",
+            "executionTime": "0.033s"
+        },
+        {
+            "testCase": 3,
+            "verdict": "Wrong Answer",
+            "passed": false,
+            "input": "",
+            "expectedOutput": "Hello 2",
+            "actualOutput": "Hello",
+            "error": "",
+            "executionTime": "0.033s"
+        }
+    ]
+} 

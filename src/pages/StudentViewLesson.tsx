@@ -12,7 +12,7 @@ import { ArrowLeftOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import "codemirror/lib/codemirror.css";
 import "codemirror/mode/htmlmixed/htmlmixed";
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 interface LessonContentSection {
   type: "theory" | "example" | "try_it" | "exercise";
@@ -56,7 +56,7 @@ const StudentViewLesson: React.FC = () => {
               bordered={false}
               style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
             >
-              <ReactMarkdown>{section.content || ""}</ReactMarkdown>
+              <ReactMarkdown>{section.content?.replace(/\\n/g, '\n') || ""}</ReactMarkdown>
             </Card>
           );
         case "example":
@@ -68,20 +68,54 @@ const StudentViewLesson: React.FC = () => {
               bordered={false}
               style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
             >
+              <ReactMarkdown>{section.instructions?.replace(/\\n/g, '\n') || ""}</ReactMarkdown>
               <SyntaxHighlighter language="html" style={dracula}>
-                {section.content || ""}
+                {section.code?.replace(/\\n/g, '\n') || ""}
               </SyntaxHighlighter>
+              <div className="mt-4">
+                <Text strong>Live Preview:</Text>
+                <div className="mt-2">
+                  <iframe
+                    srcDoc={`
+                      <!DOCTYPE html>
+                      <html>
+                        <head>
+                          <style>${section.code?.replace(/\\n/g, '\n')?.includes("<style>") ? "" : section.code?.replace(/\\n/g, '\n')}</style>
+                        </head>
+                        <body>${section.code?.replace(/\\n/g, '\n')?.includes("<body>") ? "" : section.code?.replace(/\\n/g, '\n')}</body>
+                      </html>
+                    `}
+                    title="preview"
+                    className="w-full h-64 border rounded"
+                    sandbox="allow-scripts allow-same-origin"
+                  />
+                </div>
+              </div>
             </Card>
           );
         case "try_it":
-          const code = codeStates[index] || section.code || "";
+          const code = codeStates[index] || section.code?.replace(/\\n/g, '\n') || "";
           const htmlContent = `
             <!DOCTYPE html>
             <html>
-            <head>
-              <style>${code.includes("<style>") ? "" : code}</style>
-            </head>
-            <body>${code.includes("<body>") ? "" : code}</body>
+              <head>
+                <style>
+                  ${code.includes("<style>") ? 
+                    code.split("<style>")[1].split("</style>")[0] : 
+                    code.includes("style") ? 
+                      code.split("style")[1].split("</style>")[0] : 
+                      code
+                  }
+                </style>
+              </head>
+              <body>
+                ${code.includes("<body>") ? 
+                  code.split("<body>")[1].split("</body>")[0] : 
+                  code.includes("div") ? 
+                    code.split("div")[1].split("</div>")[0] : 
+                    code
+                }
+              </body>
             </html>
           `;
           return (
@@ -92,7 +126,7 @@ const StudentViewLesson: React.FC = () => {
               bordered={false}
               style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
             >
-              <ReactMarkdown>{section.instructions || ""}</ReactMarkdown>
+              <ReactMarkdown>{section.instructions?.replace(/\\n/g, '\n') || ""}</ReactMarkdown>
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
                   <CodeMirror
@@ -102,7 +136,7 @@ const StudentViewLesson: React.FC = () => {
                       theme: "dracula",
                       lineNumbers: true,
                     }}
-                    onBeforeChange={(value) => {
+                    onBeforeChange={(_editor, _data, value) => {
                       handleCodeChange(index, value);
                     }}
                   />
@@ -112,7 +146,7 @@ const StudentViewLesson: React.FC = () => {
                     srcDoc={htmlContent}
                     title="preview"
                     className="w-full h-64 border rounded"
-                    sandbox="allow-same-origin"
+                    sandbox="allow-scripts allow-same-origin"
                   />
                 </div>
               </div>

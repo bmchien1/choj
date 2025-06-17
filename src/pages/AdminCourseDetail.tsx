@@ -60,7 +60,7 @@ interface ContentItem {
 }
 
 interface LessonSection {
-  type: "theory" | "example" | "try_it" | "exercise";
+  type: "theory" | "example" | "try_it";
   title: string;
   content?: string;
   code?: string;
@@ -94,6 +94,8 @@ const AdminCourseDetail = () => {
     questionType?: string;
     tags?: number[];
   }>({});
+  const [currentLessonType, setCurrentLessonType] = useState<LessonType>(LessonType.JSON);
+  const [videoUrl, setVideoUrl] = useState<string>("");
 
   const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
   const creatorId = user.id;
@@ -140,6 +142,21 @@ const AdminCourseDetail = () => {
     console.log("courseContent:", courseContent);
     console.log("matrices:", matrices);
   }, [courseContent, matrices]);
+
+  useEffect(() => {
+    const lessonType = form.getFieldValue("lessonType");
+    if (lessonType === LessonType.VIDEO) {
+      setSections([]);
+      form.setFieldsValue({
+        content: undefined,
+        code: undefined,
+        instructions: undefined,
+        defaultInput: undefined,
+        expectedOutput: undefined,
+        solution: undefined
+      });
+    }
+  }, [form.getFieldValue("lessonType")]);
 
   const handleAddQuestion = (question: QuestionTable) => {
     if (!selectedQuestions.find((q) => q.id === question.id)) {
@@ -251,11 +268,27 @@ const AdminCourseDetail = () => {
         const nextOrder = calculateNextOrder(selectedChapterId);
         console.log("Calculated next order for lesson:", nextOrder);
         
+        let content = null;
+        if (values.lessonType === LessonType.JSON) {
+          content = {
+            sections: sections.map(section => ({
+              type: section.type,
+              title: section.title,
+              content: section.content,
+              code: section.code,
+              defaultInput: section.defaultInput,
+              expectedOutput: section.expectedOutput,
+              instructions: section.instructions,
+              solution: section.solution
+            }))
+          };
+        }
+        
         const lessonData: Lesson = {
           title: values.title,
           description: values.description,
           lessonType: values.lessonType,
-          content: values.lessonType === LessonType.JSON ? { sections } : null,
+          content: content,
           video_url: values.lessonType === LessonType.VIDEO ? values.video_url : undefined,
           courseId: parseInt(id),
           order: nextOrder,
@@ -762,6 +795,153 @@ const AdminCourseDetail = () => {
     </div>
   );
 
+  const convertToEmbedUrl = (url: string) => {
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname.includes('youtube.com')) {
+        const videoId = urlObj.searchParams.get('v');
+        if (videoId) {
+          return `https://www.youtube.com/embed/${videoId}`;
+        }
+      } else if (urlObj.hostname.includes('youtu.be')) {
+        const videoId = urlObj.pathname.slice(1);
+        if (videoId) {
+          return `https://www.youtube.com/embed/${videoId}`;
+        }
+      }
+      return url;
+    } catch {
+      return url;
+    }
+  };
+
+  const renderSectionForm = (section: LessonSection, index: number) => {
+    const commonFields = (
+      <>
+        <Form.Item
+          label="Title"
+          required
+        >
+          <Input
+            value={section.title}
+            onChange={(e) => {
+              const newSections = [...sections];
+              newSections[index] = { ...section, title: e.target.value };
+              setSections(newSections);
+            }}
+          />
+        </Form.Item>
+      </>
+    );
+
+    switch (section.type) {
+      case "theory":
+        return (
+          <>
+            {commonFields}
+            <Form.Item
+              label="Content"
+              required
+            >
+              <Input.TextArea
+                rows={4}
+                value={section.content}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index] = { ...section, content: e.target.value };
+                  setSections(newSections);
+                }}
+              />
+            </Form.Item>
+          </>
+        );
+      case "example":
+        return (
+          <>
+            {commonFields}
+            <Form.Item
+              label="Code"
+              required
+            >
+              <Input.TextArea
+                rows={4}
+                value={section.code}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index] = { ...section, code: e.target.value };
+                  setSections(newSections);
+                }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Instructions"
+              required
+            >
+              <Input.TextArea
+                rows={4}
+                value={section.instructions}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index] = { ...section, instructions: e.target.value };
+                  setSections(newSections);
+                }}
+              />
+            </Form.Item>
+          </>
+        );
+      case "try_it":
+        return (
+          <>
+            {commonFields}
+            <Form.Item
+              label="Code"
+              required
+            >
+              <Input.TextArea
+                rows={4}
+                value={section.code}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index] = { ...section, code: e.target.value };
+                  setSections(newSections);
+                }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Instructions"
+              required
+            >
+              <Input.TextArea
+                rows={4}
+                value={section.instructions}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index] = { ...section, instructions: e.target.value };
+                  setSections(newSections);
+                }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Expected Output"
+              required
+            >
+              <Input.TextArea
+                rows={2}
+                value={section.expectedOutput}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index] = { ...section, expectedOutput: e.target.value };
+                  setSections(newSections);
+                }}
+              />
+            </Form.Item>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
       {isCourseLoading ? (
@@ -1024,6 +1204,225 @@ const AdminCourseDetail = () => {
               style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
             >
               Create Assignment
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={<span style={{ color: '#ff6a00' }}>Create Chapter</span>}
+        open={modalVisible && modalType === "chapter"}
+        onCancel={() => {
+          setModalVisible(false);
+          setModalType(null);
+          form.resetFields();
+        }}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAddOrUpdate}
+          initialValues={{ type: "chapter" }}
+        >
+          <Form.Item
+            name="title"
+            label="Chapter Title"
+            rules={[{ required: true, message: "Please enter the chapter title" }]}
+          >
+            <Input placeholder="Enter chapter title" />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[{ required: true, message: "Please enter the description" }]}
+          >
+            <Input.TextArea rows={4} placeholder="Enter chapter description" />
+          </Form.Item>
+
+          <Form.Item style={{ marginTop: 24 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={createChapterMutation.isPending}
+              style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+            >
+              Create Chapter
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={<span style={{ color: '#ff6a00' }}>Create Lesson</span>}
+        open={modalVisible && modalType === "lesson"}
+        onCancel={() => {
+          setModalVisible(false);
+          setModalType(null);
+          form.resetFields();
+          setSections([]);
+          setCurrentLessonType(LessonType.JSON);
+          setVideoUrl("");
+        }}
+        footer={null}
+        width={800}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAddOrUpdate}
+          initialValues={{ type: "lesson", lessonType: LessonType.JSON }}
+          onValuesChange={(changedValues) => {
+            if (changedValues.lessonType) {
+              setCurrentLessonType(changedValues.lessonType);
+              if (changedValues.lessonType === LessonType.VIDEO) {
+                setSections([]);
+                form.setFieldsValue({
+                  content: undefined,
+                  code: undefined,
+                  instructions: undefined,
+                  defaultInput: undefined,
+                  expectedOutput: undefined,
+                  solution: undefined
+                });
+              } else {
+                setVideoUrl("");
+              }
+            }
+          }}
+        >
+          <Form.Item
+            name="title"
+            label="Lesson Title"
+            rules={[{ required: true, message: "Please enter the lesson title" }]}
+          >
+            <Input placeholder="Enter lesson title" />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[{ required: true, message: "Please enter the description" }]}
+          >
+            <Input.TextArea rows={4} placeholder="Enter lesson description" />
+          </Form.Item>
+
+          <Form.Item
+            name="lessonType"
+            label="Lesson Type"
+            rules={[{ required: true, message: "Please select lesson type" }]}
+          >
+            <Select>
+              <Option value={LessonType.JSON}>Interactive Lesson</Option>
+              <Option value={LessonType.VIDEO}>Video Lesson</Option>
+            </Select>
+          </Form.Item>
+
+          {currentLessonType === LessonType.VIDEO ? (
+            <>
+              <Form.Item
+                name="video_url"
+                label="Video URL"
+                rules={[{ required: true, message: "Please enter video URL" }]}
+              >
+                <Input 
+                  placeholder="Enter video URL" 
+                  onChange={(e) => {
+                    const url = e.target.value;
+                    setVideoUrl(url);
+                    form.setFieldsValue({ video_url: url });
+                  }}
+                />
+              </Form.Item>
+              {videoUrl && (
+                <div className="mb-4">
+                  <Text strong>Video Preview</Text>
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '100%', marginTop: 8 }}>
+                    <iframe
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                      src={convertToEmbedUrl(videoUrl)}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div>
+              <Text strong>Lesson Sections</Text>
+              {sections.map((section, index) => (
+                <Card key={index} className="mb-4">
+                  <Form.Item
+                    label="Section Type"
+                    required
+                  >
+                    <Select
+                      value={section.type}
+                      onChange={(value) => {
+                        const newSections = [...sections];
+                        newSections[index] = { 
+                          type: value,
+                          title: "",
+                          content: "",
+                          code: "",
+                          instructions: "",
+                          defaultInput: "",
+                          expectedOutput: "",
+                          solution: ""
+                        };
+                        setSections(newSections);
+                      }}
+                    >
+                      <Option value="theory">Theory</Option>
+                      <Option value="example">Example</Option>
+                      <Option value="try_it">Try It</Option>
+                    </Select>
+                  </Form.Item>
+                  {renderSectionForm(section, index)}
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newSections = sections.filter((_, i) => i !== index);
+                      setSections(newSections);
+                    }}
+                  >
+                    Remove Section
+                  </Button>
+                </Card>
+              ))}
+              <Button
+                type="dashed"
+                onClick={() => {
+                  setSections([
+                    ...sections,
+                    {
+                      type: "theory",
+                      title: "",
+                      content: "",
+                    },
+                  ]);
+                }}
+                icon={<PlusOutlined />}
+                className="mb-4"
+              >
+                Add Section
+              </Button>
+            </div>
+          )}
+
+          <Form.Item style={{ marginTop: 24 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={createLessonMutation.isPending}
+              style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+            >
+              Create Lesson
             </Button>
           </Form.Item>
         </Form>
