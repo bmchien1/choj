@@ -4,7 +4,7 @@ import { BiTrash } from "react-icons/bi";
 import { PlusOutlined } from "@ant-design/icons";
 import { useGetTagsByCreator, useDeleteTag, useCreateTag, useUpdateTag } from "@/hooks/useTagQueries";
 import { Tag } from "@/apis/type";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import toast from "react-hot-toast";
 import debounce from "lodash/debounce";
 
@@ -88,6 +88,22 @@ const ListTeacherTag = () => {
     );
   };
 
+  // Effect to handle form values when modal state changes
+  useEffect(() => {
+    if (modalState.type === "edit") {
+      if (modalState.tag) {
+        // Editing existing tag - set form values
+        editForm.setFieldsValue({
+          name: modalState.tag.name,
+          description: modalState.tag.description,
+        });
+      } else {
+        // Creating new tag - reset form
+        form.resetFields();
+      }
+    }
+  }, [modalState, editForm, form]);
+
   const onCreateFinish = async (values: any) => {
     try {
       if (!user.id) {
@@ -139,7 +155,6 @@ const ListTeacherTag = () => {
             icon={<HiPencilAlt size={20} />}
             onClick={() => {
               setModalState({ type: "edit", tag: record });
-              editForm.setFieldsValue(record);
             }}
           />
           <Button

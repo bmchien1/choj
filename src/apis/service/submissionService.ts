@@ -69,6 +69,13 @@ const submissionService = {
     return await axiosClient.get(`/api/submissions/assignment/${assignmentId}/user/${userId}`).then(res => res.data);
   },
 
+  getAllByCourseAndUser: async (courseId: number, userId: number) => {
+    const response = await axiosClient.get("/api/submissions/all-by-course-user", {
+      params: { courseId, userId }
+    });
+    return response.data;
+  },
+
 };
 
 export default submissionService;

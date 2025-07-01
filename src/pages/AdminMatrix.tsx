@@ -63,6 +63,7 @@ const ListAdminMatrix = () => {
           difficulty_level: criterion.difficultyLevel,
           tagIds: [criterion.tagId],
           percentage: criterion.percentage,
+          quantity: criterion.quantity,
         })),
       };
 
@@ -86,6 +87,7 @@ const ListAdminMatrix = () => {
           difficulty_level: criterion.difficultyLevel,
           tagIds: [criterion.tagId],
           percentage: criterion.percentage,
+          quantity: criterion.quantity,
         })),
       };
 
@@ -170,6 +172,7 @@ const ListAdminMatrix = () => {
                   difficultyLevel: c.difficulty_level,
                   tagId: c.tagIds[0],
                   percentage: c.percentage,
+                  quantity: c.quantity,
                 })),
               });
               setIsEditModalOpen(true);
@@ -365,6 +368,22 @@ const ListAdminMatrix = () => {
                         max={100}
                       />
                     </Form.Item>
+
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'quantity']}
+                      label="Quantity"
+                      rules={[
+                        { required: true, message: 'Please enter quantity' },
+                        { type: 'number', min: 1, message: 'Quantity must be greater than 0' }
+                      ]}
+                    >
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        placeholder="Enter quantity"
+                        min={1}
+                      />
+                    </Form.Item>
                   </Card>
                 ))}
                 <Form.Item>
@@ -515,6 +534,22 @@ const ListAdminMatrix = () => {
                         placeholder="Enter percentage"
                         min={1}
                         max={100}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'quantity']}
+                      label="Quantity"
+                      rules={[
+                        { required: true, message: 'Please enter quantity' },
+                        { type: 'number', min: 1, message: 'Quantity must be greater than 0' }
+                      ]}
+                    >
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        placeholder="Enter quantity"
+                        min={1}
                       />
                     </Form.Item>
                   </Card>

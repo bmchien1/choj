@@ -31,6 +31,8 @@ import {
   HistoryOutlined,
 } from "@ant-design/icons";
 import assignmentService from "@/apis/service/assignmentService";
+import { useCompletedLessons } from "@/hooks/useUserLesson";
+import { useAllSubmissionsByUser } from "@/hooks/useSubmissionQueries";
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -53,11 +55,23 @@ const StudentCourseDetail: React.FC = () => {
 
   const { data: course, isLoading: isCourseLoading } = useGetCourseById(id);
   const { data: chapters = [], isLoading: isChaptersLoading } = useGetChaptersByCourse(id);
+  const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const { data: completedLessons } = useCompletedLessons(user.id);
+  const completedLessonIds = (completedLessons || []).map((ul: any) => ul.lesson.id);
 
-  // Placeholder for actual progress tracking
-  const totalChapters = chapters.length;
-  const completedChapters = Math.min(2, totalChapters); // For demo, assuming 2 completed chapters
-  const progress = totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0;
+  const allLessons = chapters.flatMap((c: any) => c.lessons || []);
+  const allAssignments = chapters.flatMap((c: any) => c.assignments || []);
+
+  const { data: allSubmissions } = useAllSubmissionsByUser(course?.id ?? 0, user.id);
+  // console.log(allSubmissions)
+  const submittedAssignmentIds = new Set((allSubmissions || []).map((s: any) => s.assignment.id));
+  const completedAssignmentsCount = allAssignments.filter((a: any) => submittedAssignmentIds.has(a.id)).length;
+
+  const totalItems = allLessons.length + allAssignments.length;
+  const completedLessonsCount = allLessons.filter((l: any) => completedLessonIds.includes(l.id)).length;
+  const completedCount = completedLessonsCount + completedAssignmentsCount;
+
+  const progress = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
 
   const handleChapterExpand = (chapterId: number) => {
     setExpandedChapters(prev => 
@@ -149,6 +163,9 @@ const StudentCourseDetail: React.FC = () => {
               Locked
             </Tag>
           )}
+          {isLesson && completedLessonIds.includes(item.id) && (
+            <Tag color="success" icon={<CheckCircleOutlined />}>Đã hoàn thành</Tag>
+          )}
         </Flex>
         <Flex align="center" gap="8px">
           {!isLesson && item.duration && (
@@ -234,7 +251,7 @@ const StudentCourseDetail: React.FC = () => {
           <Card className="mb-4">
             <Title level={3} style={{ margin: 0, color: '#ff6a00' }}>Course Progress</Title>
             <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-              {completedChapters} of {totalChapters} chapters completed
+              {completedCount} of {totalItems} items completed
             </Text>
             <Progress 
               percent={progress} 

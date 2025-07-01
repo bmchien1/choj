@@ -245,6 +245,7 @@ export interface Matrix {
     difficulty_level: string;
     tagIds: number[];
     percentage: number;
+    quantity: number;
   }[];
   user?: User;
 }
@@ -358,4 +359,20 @@ export interface ContestSubmission {
     sourceCode: string;
     language: string;
   }>;
+}
+
+export interface UserLesson {
+  id: number;
+  user: User;
+  lesson: Lesson;
+  completed: boolean;
+}
+
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
 }

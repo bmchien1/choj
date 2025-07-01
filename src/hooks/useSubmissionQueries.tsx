@@ -125,7 +125,6 @@ export const useCreateAssignmentSubmission = () => {
     onSuccess: (data) => {
       console.log('Submission success:', data);
       queryClient.invalidateQueries({ queryKey: ["submissions"] });
-      toast.success("Assignment submitted successfully");
     },
     onError: (error) => {
       console.error('Submission error:', error);
@@ -155,3 +154,11 @@ export const useCreateContestSubmission = () => {
     },
   });
 };
+
+export const useAllSubmissionsByUser = (courseId: number, userId: number) => {
+  return useQuery({
+    queryKey: ["all-submissions", courseId, userId],
+    queryFn: () => submissionService.getAllByCourseAndUser(courseId, userId),
+    enabled: !!courseId && !!userId,
+  });
+}; 

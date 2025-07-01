@@ -80,6 +80,12 @@ const ListTeacherCourse = () => {
     course: Course | null;
   }>({ type: null, course: null });
 
+  useEffect(() => {
+    if (modalState.type === "edit" && modalState.course) {
+      editForm.setFieldsValue(modalState.course);
+    }
+  }, [modalState, editForm]);
+
   const handleDeleteCourse = (id: number) => {
     deleteCourse.mutate(id.toString(), {
       onSuccess: () => {

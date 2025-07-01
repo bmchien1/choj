@@ -44,7 +44,7 @@ const Login = () => {
         },
         onError: (error: any) => {
           console.error("Login mutation error:", error);
-          toast.error(error?.message || t("Login failed!"));
+          toast.error(error?.response?.data?.message || t("Login failed!"));
         },
       }
     );

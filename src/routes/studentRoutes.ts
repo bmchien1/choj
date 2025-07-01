@@ -11,6 +11,7 @@ import {
 	UserCourseListPage,
 	StudentContestView,
 	ContestPage,
+	ChangePasswordPage,
 } from '@/pages';
 import ContestAccess from '@/pages/ContestAccess';
 
@@ -63,7 +64,11 @@ const studentRoutes = {
 	doContestPrivate:{
 		path: '/contests/access/:url',
 		component: ContestAccess
-	}
+	},
+	changePassword: {
+		path: '/change-password',
+		component: ChangePasswordPage,
+	},
 	// // problems: {
 	// // 	path: '/my-problems/:contestId',
 	// // 	component: UserProblemListPage,

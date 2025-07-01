@@ -46,6 +46,12 @@ const ListAdminCourse = () => {
     course: Course | null;
   }>({ type: null, course: null });
 
+  useEffect(() => {
+    if (modalState.type === "edit" && modalState.course) {
+      editForm.setFieldsValue(modalState.course);
+    }
+  }, [modalState, editForm]);
+
   // Debounced search function
   const debouncedSetApiSearch = useMemo(
     () =>

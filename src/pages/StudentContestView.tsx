@@ -169,101 +169,112 @@ export const StudentContestView: React.FC = () => {
     return (
         <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
             <Title level={2} style={{ color: '#ff6a00', marginBottom: 24 }}>Available Contests</Title>
-            <Row gutter={[16, 16]}>
-                {contests.map((contest: Contest) => {
-                    const status = getContestStatus(contest);
-                    const attempts = contestAttempts[contest.id] || [];
-                    const submittedAttempt = attempts.find(a => a.isSubmitted);
-                    const activeAttempt = attempts.find(a => !a.isSubmitted);
+            {contests.length === 0 ? (
+                <div style={{ textAlign: 'center', marginTop: 64 }}>
+                    <ClockCircleOutlined style={{ fontSize: 48, color: '#ff6a00', marginBottom: 16 }} />
+                    <div>
+                        <Text type="secondary" style={{ fontSize: 18 }}>
+                            There are currently no available contests.
+                        </Text>
+                    </div>
+                </div>
+            ) : (
+                <Row gutter={[16, 16]}>
+                    {contests.map((contest: Contest) => {
+                        const status = getContestStatus(contest);
+                        const attempts = contestAttempts[contest.id] || [];
+                        const submittedAttempt = attempts.find(a => a.isSubmitted);
+                        const activeAttempt = attempts.find(a => !a.isSubmitted);
 
-                    return (
-                        <Col xs={24} sm={12} md={8} lg={6} key={contest.id}>
-                            <Card
-                                style={{ marginBottom: 16 }}
-                                hoverable
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <div>
-                                        <Title level={4}>{contest.title}</Title>
-                                        <Paragraph>{contest.description}</Paragraph>
-                                        <Space direction="vertical">
-                                            <Text>Start: {moment(contest.startTime).format('YYYY-MM-DD HH:mm')}</Text>
-                                            <Text>End: {moment(contest.endTime).format('YYYY-MM-DD HH:mm')}</Text>
-                                            <Text>Duration: {contest.duration} minutes</Text>
-                                            <Tag icon={status.icon} color={status.color}>
-                                                {status.text}
-                                            </Tag>
-                                            {activeAttempt && !submittedAttempt && (
-                                                <Text type="warning">
-                                                    Time left: {Math.floor(activeAttempt.timeLeft / 60)}:{(activeAttempt.timeLeft % 60).toString().padStart(2, '0')}
-                                                </Text>
-                                            )}
-                                            {!contest.isPublic && (
-                                                <Space>
-                                                    <Tag icon={<LockOutlined />} color="warning">Private Contest</Tag>
+                        return (
+                            <Col xs={24} sm={12} md={8} lg={6} key={contest.id}>
+                                <Card
+                                    style={{ marginBottom: 16 }}
+                                    hoverable
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div>
+                                            <Title level={4}>{contest.title}</Title>
+                                            <Paragraph>{contest.description}</Paragraph>
+                                            <Space direction="vertical">
+                                                <Text>Start: {moment(contest.startTime).format('YYYY-MM-DD HH:mm')}</Text>
+                                                <Text>End: {moment(contest.endTime).format('YYYY-MM-DD HH:mm')}</Text>
+                                                <Text>Duration: {contest.duration} minutes</Text>
+                                                <Tag icon={status.icon} color={status.color}>
+                                                    {status.text}
+                                                </Tag>
+                                                {activeAttempt && !submittedAttempt && (
+                                                    <Text type="warning">
+                                                        Time left: {Math.floor(activeAttempt.timeLeft / 60)}:{(activeAttempt.timeLeft % 60).toString().padStart(2, '0')}
+                                                    </Text>
+                                                )}
+                                                {!contest.isPublic && (
                                                     <Space>
-                                                        <Text copyable={{ 
-                                                            text: `${window.location.origin}/contests/access/${contest.accessUrl}`,
-                                                            tooltips: ['Copy URL', 'Copied!']
-                                                        }}>
-                                                            Access URL
-                                                        </Text>
+                                                        <Tag icon={<LockOutlined />} color="warning">Private Contest</Tag>
+                                                        <Space>
+                                                            <Text copyable={{ 
+                                                                text: `${window.location.origin}/contests/access/${contest.accessUrl}`,
+                                                                tooltips: ['Copy URL', 'Copied!']
+                                                            }}>
+                                                                Access URL
+                                                            </Text>
+                                                        </Space>
                                                     </Space>
-                                                </Space>
-                                            )}
-                                        </Space>
+                                                )}
+                                            </Space>
+                                        </div>
+                                        <div>
+                                            {(() => {
+                                                const now = new Date();
+                                                const startTime = new Date(contest.startTime);
+                                                const endTime = new Date(contest.endTime);
+                                                
+                                                if (submittedAttempt) {
+                                                    return (
+                                                        <Button
+                                                            type="primary"
+                                                            onClick={() => handleViewResults(contest)}
+                                                            style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+                                                        >
+                                                            View Results
+                                                        </Button>
+                                                    );
+                                                }
+                                                
+                                                if (activeAttempt) {
+                                                    return (
+                                                        <Button
+                                                            type="primary"
+                                                            onClick={() => handleJoinContest(contest)}
+                                                            style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+                                                        >
+                                                            Continue Contest
+                                                        </Button>
+                                                    );
+                                                }
+                                                
+                                                if (now >= startTime && now <= endTime) {
+                                                    return (
+                                                        <Button
+                                                            type="primary"
+                                                            onClick={() => handleJoinContest(contest)}
+                                                            style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+                                                        >
+                                                            Join Contest
+                                                        </Button>
+                                                    );
+                                                }
+                                                
+                                                return null;
+                                            })()}
+                                        </div>
                                     </div>
-                                    <div>
-                                        {(() => {
-                                            const now = new Date();
-                                            const startTime = new Date(contest.startTime);
-                                            const endTime = new Date(contest.endTime);
-                                            
-                                            if (submittedAttempt) {
-                                                return (
-                                                    <Button
-                                                        type="primary"
-                                                        onClick={() => handleViewResults(contest)}
-                                                        style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
-                                                    >
-                                                        View Results
-                                                    </Button>
-                                                );
-                                            }
-                                            
-                                            if (activeAttempt) {
-                                                return (
-                                                    <Button
-                                                        type="primary"
-                                                        onClick={() => handleJoinContest(contest)}
-                                                        style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
-                                                    >
-                                                        Continue Contest
-                                                    </Button>
-                                                );
-                                            }
-                                            
-                                            if (now >= startTime && now <= endTime) {
-                                                return (
-                                                    <Button
-                                                        type="primary"
-                                                        onClick={() => handleJoinContest(contest)}
-                                                        style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
-                                                    >
-                                                        Join Contest
-                                                    </Button>
-                                                );
-                                            }
-                                            
-                                            return null;
-                                        })()}
-                                    </div>
-                                </div>
-                            </Card>
-                        </Col>
-                    );
-                })}
-            </Row>
+                                </Card>
+                            </Col>
+                        );
+                    })}
+                </Row>
+            )}
 
             <Modal
                 title={

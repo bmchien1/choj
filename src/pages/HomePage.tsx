@@ -30,6 +30,7 @@ const Home = () => {
     queryFn: () => homeService.getStatistics(),
   });
 
+  // console.log(stats);
   // Fetch recent contests
   const { data: recentContests } = useQuery({
     queryKey: ["recent-contests"],
@@ -41,7 +42,7 @@ const Home = () => {
     queryKey: ["recent-problems"],
     queryFn: () => homeService.getRecentProblems(),
   });
-
+console.log(recentProblems);
   // Fetch top users
   const { data: topUsers } = useQuery({
     queryKey: ["top-users"],
@@ -62,14 +63,13 @@ const Home = () => {
           >
             <Statistic
               title={<span className="text-white">Total Questions</span>}
-              value={stats?.totalProblems || 0}
+              value={stats?.data.totalProblems || 0}
               prefix={<CodeOutlined />}
               valueStyle={{ color: "white" }}
             />
             <div className="mt-4">
               <Link to="/list-problem">
                 <Button type="link" className="text-white p-0">
-                  View All Problems →
                 </Button>
               </Link>
             </div>
@@ -85,12 +85,12 @@ const Home = () => {
           >
             <Statistic
               title={<span className="text-white">Active Courses</span>}
-              value={stats?.totalContests || 0}
+              value={stats?.data.totalContests || 0}
               prefix={<TrophyOutlined />}
               valueStyle={{ color: "white" }}
             />
             <div className="mt-4">
-              <Link to="/contests">
+              <Link to="/contest">
                 <Button type="link" className="text-white p-0">
                   View All Contests →
                 </Button>
@@ -108,7 +108,7 @@ const Home = () => {
           >
             <Statistic
               title={<span className="text-white">Total Users</span>}
-              value={stats?.totalUsers || 0}
+              value={stats?.data.totalUsers || 0}
               prefix={<UserOutlined />}
               valueStyle={{ color: "white" }}
             />
@@ -124,7 +124,7 @@ const Home = () => {
           >
             <Statistic
               title={<span className="text-white">Total Submissions</span>}
-              value={stats?.totalSubmissions || 0}
+              value={stats?.data.totalSubmissions || 0}
               prefix={<SolutionOutlined />}
               valueStyle={{ color: "white" }}
             />

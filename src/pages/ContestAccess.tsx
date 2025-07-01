@@ -4,8 +4,54 @@ import { Card, Typography, Button, Space, Modal, message } from 'antd';
 import { contestService } from '../apis/service/contestService';
 import { Contest } from '../apis/type';
 import moment from 'moment';
+import { useGetSubmissionsByContest } from '../hooks/useSubmissionQueries';
+import { Table, Tag } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
+
+const SubmissionHistory: React.FC<{ contestId: number }> = ({ contestId }) => {
+    const { data: submissions, isLoading } = useGetSubmissionsByContest(contestId);
+
+    const columns = [
+        {
+            title: 'Submitted At',
+            dataIndex: 'submitted_at',
+            key: 'submitted_at',
+            render: (date: string) => moment(date).format('YYYY-MM-DD HH:mm:ss'),
+        },
+        {
+            title: 'Score',
+            dataIndex: 'score',
+            key: 'score',
+            render: (score: number) => `${score.toFixed(2)}`,
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status: string) => (
+                <Tag color={
+                    status === 'completed' ? 'success' :
+                    status === 'evaluating' ? 'processing' :
+                    status === 'failed' ? 'error' : 'default'
+                }>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Tag>
+            ),
+        },
+    ];
+
+    if (isLoading) return <Text>Loading submission history...</Text>;
+
+    return (
+        <Table
+            columns={columns}
+            dataSource={submissions}
+            rowKey="id"
+            pagination={false}
+        />
+    );
+};
 
 export const ContestAccess: React.FC = () => {
     const { url } = useParams<{ url: string }>();
@@ -14,7 +60,7 @@ export const ContestAccess: React.FC = () => {
     const [contest, setContest] = useState<Contest | null>(null);
     const [loading, setLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [modalType, setModalType] = useState<'continue' | 'start'>('start');
+    const [modalType, setModalType] = useState<'continue' | 'start' | 'review'>('start');
     const [attempts, setAttempts] = useState<any[]>([]);
 
     useEffect(() => {
@@ -75,6 +121,11 @@ export const ContestAccess: React.FC = () => {
         }
     };
 
+    const handleViewResults = () => {
+        setModalType('review');
+        setIsModalVisible(true);
+    };
+
     if (loading) {
         return <div style={{ padding: 24 }}><Text>Loading...</Text></div>;
     }
@@ -124,7 +175,7 @@ export const ContestAccess: React.FC = () => {
                                     return (
                                         <Button
                                             type="primary"
-                                            onClick={() => navigate(`/submissions/contest/${contest.id}`)}
+                                            onClick={handleViewResults}
                                             style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
                                         >
                                             View Results
@@ -142,7 +193,7 @@ export const ContestAccess: React.FC = () => {
                                 return (
                                     <Button
                                         type="primary"
-                                        onClick={() => navigate(`/submissions/contest/${contest.id}`)}
+                                        onClick={handleViewResults}
                                         style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
                                     >
                                         View Results
@@ -167,24 +218,34 @@ export const ContestAccess: React.FC = () => {
             <Modal
                 title={
                     <span style={{ color: '#ff6a00' }}>
-                        {modalType === 'continue' ? 'Continue Contest' : 'Start Contest'}
+                        {modalType === 'continue' ? 'Continue Contest' : 
+                         modalType === 'start' ? 'Start Contest' : 
+                         'Submission History'}
                     </span>
                 }
                 open={isModalVisible}
-                onOk={handleStartContest}
+                onOk={modalType === 'review' ? undefined : handleStartContest}
                 onCancel={() => setIsModalVisible(false)}
                 okText={modalType === 'continue' ? 'Continue' : 'Start'}
-                okButtonProps={{ style: { background: '#ff6a00', borderColor: '#ff6a00' } }}
+                okButtonProps={modalType === 'review' ? undefined : { style: { background: '#ff6a00', borderColor: '#ff6a00' } }}
+                width={modalType === 'review' ? 800 : 520}
+                footer={modalType === 'review' ? null : undefined}
             >
-                <p>
-                    {modalType === 'continue'
-                        ? 'You have an ongoing attempt. Would you like to continue?'
-                        : 'Are you sure you want to start this contest?'}
-                </p>
-                {modalType === 'continue' && (
-                    <p style={{ color: '#ff4d4f' }}>
-                        Note: Your previous progress will be saved.
-                    </p>
+                {modalType === 'review' ? (
+                    <SubmissionHistory contestId={contest.id} />
+                ) : (
+                    <>
+                        <p>
+                            {modalType === 'continue'
+                                ? 'You have an ongoing attempt. Would you like to continue?'
+                                : 'Are you sure you want to start this contest?'}
+                        </p>
+                        {modalType === 'continue' && (
+                            <p style={{ color: '#ff4d4f' }}>
+                                Note: Your previous progress will be saved.
+                            </p>
+                        )}
+                    </>
                 )}
             </Modal>
         </div>

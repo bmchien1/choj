@@ -14,18 +14,6 @@ interface MatrixQueryParams {
   tags?: number[];
 }
 
-interface MatrixCreate {
-  name: string;
-  description?: string;
-  total_points?: number;
-  criteria: {
-    questionType: string;
-    difficulty_level: string;
-    tagIds: number[];
-    percentage: number;
-  }[];
-}
-
 export const useGetAllMatrices = (params?: MatrixQueryParams) => {
   return useQuery<{ matrices: Matrix[]; pagination: any }>({
     queryKey: ["matrices", params],
@@ -37,11 +25,20 @@ export const useGetMatricesByUser = (userId: string, params?: MatrixQueryParams)
   return useQuery<{ matrices: Matrix[]; pagination: any }>({
     queryKey: ["matrices", "user", userId, params],
     queryFn: async () => {
+      console.log('useGetMatricesByUser - Calling API with userId:', userId, 'params:', params);
       const response = await matrixService.getByUser(userId, params);
-      console.log('API Response:', response);
+      console.log('useGetMatricesByUser - API Response:', response);
+      
+      // Backend returns { matrices: [], pagination: {} } format
+      if (response && typeof response === 'object' && 'matrices' in response) {
+        return response as { matrices: Matrix[]; pagination: any };
+      }
+      
+      // Fallback for backward compatibility
+      const matricesArray = Array.isArray(response) ? response : [];
       return {
-        matrices: Array.isArray(response) ? response : [],
-        pagination: { total: Array.isArray(response) ? response.length : 0 }
+        matrices: matricesArray,
+        pagination: { total: matricesArray.length }
       };
     },
     enabled: !!userId,
@@ -62,7 +59,7 @@ export const useCreateMatrix = () => {
     mutationFn: matrixService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matrices"] });
-      toast.success("Matrix created successfully");
+      queryClient.invalidateQueries({ queryKey: ["matrix"] });
     },
     onError: () => {
       toast.error("Failed to create matrix");
@@ -76,8 +73,8 @@ export const useUpdateMatrix = () => {
     mutationFn: ({ matrixId, data }) => matrixService.update(matrixId, data),
     onSuccess: (updatedMatrix) => {
       queryClient.invalidateQueries({ queryKey: ["matrices"] });
+      queryClient.invalidateQueries({ queryKey: ["matrix"] });
       queryClient.invalidateQueries({ queryKey: ["matrix", updatedMatrix.id] });
-      toast.success("Matrix updated successfully");
     },
     onError: () => {
       toast.error("Failed to update matrix");
@@ -91,7 +88,7 @@ export const useDeleteMatrix = () => {
     mutationFn: matrixService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matrices"] });
-      toast.success("Matrix deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["matrix"] });
     },
     onError: () => {
       toast.error("Failed to delete matrix");

@@ -25,7 +25,6 @@ export const useCreateChapter = () => {
     mutationFn: ({ courseId, data }) => chapterService.create(courseId, data),
     onSuccess: (_, { courseId }) => {
       queryClient.invalidateQueries({ queryKey: ["chapters", courseId] });
-      toast.success("Chapter created successfully");
     },
     onError: () => {
       toast.error("Failed to create chapter");
@@ -76,7 +75,7 @@ export const useUpdateChapterOrder = () => {
     mutationFn: ({ chapterId, order }) => chapterService.updateOrder(chapterId, order),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chapters"] });
-      toast.success("Chapter order updated successfully");
+      // toast.success("Chapter order updated successfully");
     },
     onError: () => {
       toast.error("Failed to update chapter order");

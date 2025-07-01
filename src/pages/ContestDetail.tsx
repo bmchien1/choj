@@ -368,7 +368,7 @@ export const ContestDetail: React.FC = () => {
                                             key: 'questionName',
                                             render: ( record: any) => {
                                                 console.log('Rendering question:', record);
-                                                return record.question || record.questionName || 'No name';
+                                                return record || record.questionName || 'No name';
                                             }
                                         },
                                         { 

@@ -494,7 +494,7 @@ const StudentAssignment: React.FC = () => {
                                 input,
                                 selectedLanguages[question.id!.toString()] ||
                                   question.language ||
-                                  "javascript"
+                                  "cpp"
                               );
                             }}
                             style={{ background: '#ff6a00', borderColor: '#ff6a00' }}

@@ -15,7 +15,6 @@ export {default as AdminJoinCoursesPage} from "@/pages/AdminJoinCourses";
 export {default as TeacherCourseListPage} from "@/pages/TeacherCourse.tsx";
 export {default as TeacherJoinCoursesPage} from "@/pages/TeacherJoinCourses.tsx";
 
-export {default as ViewLesson} from "@/pages/ViewLesson.tsx";
 
 
 export {default as AdminQuestionListPage} from "@/pages/AdminQuestion.tsx";
@@ -36,7 +35,7 @@ export {default as AdminSubmission} from "@/pages/AdminSubmission.tsx";
 
 // export {default as ResetPasswordPage} from "@/pages/auth/ResetPassword.tsx";
 // export {default as ForgotPasswordPage} from "@/pages/auth/ForgotPassword.tsx";
-// export {default as ChangePasswordPage} from "@/pages/auth/ChangePassword.tsx";
+export {default as ChangePasswordPage} from './ChangePassword';
 // // export {default as UserProblemListPage} from "@/pages/list-user-problem";
 // export {default as UserProblemDetailsPage} from "@/pages/user-problem";
 // export {default as ProfilePage} from "@/pages/auth/ProfilePage.tsx";

@@ -192,7 +192,6 @@ export const ContestPage: React.FC = () => {
                 }
             } catch (error) {
                 console.error("Error loading attempt:", error);
-                toast.error("Failed to load contest attempt");
             } finally {
                 setIsLoadingAttempt(false);
             }

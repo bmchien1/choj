@@ -7,6 +7,8 @@ import {
   User,
   UserRole,
   LoginCredentials,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
 } from "@/apis/type";
 import toast from "react-hot-toast";
 
@@ -64,11 +66,17 @@ export const useEditUsers = () => {
             : [updatedUser];
         });
         queryClient.invalidateQueries({ queryKey: ["users"] });
-        toast.success("User role updated successfully");
       },
       onError: () => {
         toast.error("Failed to update user role");
       },
     }
+  );
+};
+
+export const useChangePassword = () => {
+  return useMutationAction<ChangePasswordResponse, ChangePasswordRequest>(
+    ["change-password"],
+    userService.changePassword
   );
 };

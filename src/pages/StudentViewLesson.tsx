@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Spin, Typography, Button, Input, Space } from "antd";
+import { Card, Spin, Typography, Button, Input, Space, Tag } from "antd";
 import { useGetLessonById } from "@/hooks/useLessonQueries";
 import { LessonType } from "@/apis/type";
 import toast from "react-hot-toast";
@@ -11,6 +11,7 @@ import { Controlled as CodeMirror } from "react-codemirror2";
 import { ArrowLeftOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import "codemirror/lib/codemirror.css";
 import "codemirror/mode/htmlmixed/htmlmixed";
+import { useMarkLessonCompleted, useIsLessonCompleted } from "@/hooks/useUserLesson";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -30,6 +31,10 @@ const StudentViewLesson: React.FC = () => {
   const navigate = useNavigate();
   const { data: lesson, isLoading, error } = useGetLessonById(lessonId || "");
   const [codeStates, setCodeStates] = useState<{ [key: number]: string }>({});
+  const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const lessonIdNum = lesson?.id;
+  const { data: isCompleted, refetch } = useIsLessonCompleted(user.id, lessonIdNum ?? 0);
+  const markCompleted = useMarkLessonCompleted();
 
   if (isLoading) {
     return <Spin size="large" className="flex justify-center mt-20" />;
@@ -317,13 +322,20 @@ const StudentViewLesson: React.FC = () => {
 
       <Card bordered={false} style={{ marginTop: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <Button
-          type="primary"
-          icon={<CheckCircleOutlined />}
-          onClick={() => navigate(`/my-courses/${lesson.course.id}`)}
-          style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+          type={isCompleted ? "primary" : "default"}
+          icon={isCompleted ? <CheckCircleOutlined /> : undefined}
+          onClick={() => {
+            if (!lessonIdNum) return;
+            markCompleted.mutate(
+              { userId: user.id, lessonId: lessonIdNum, completed: !isCompleted },
+              { onSuccess: () => refetch() }
+            );
+          }}
+          style={{ background: isCompleted ? '#ff6a00' : undefined, borderColor: '#ff6a00' }}
         >
-          Mark as Complete
+          {isCompleted ? "Đã hoàn thành" : "Đánh dấu hoàn thành"}
         </Button>
+        {isCompleted && <Tag color="success" icon={<CheckCircleOutlined />}>Đã hoàn thành</Tag>}
       </Card>
     </div>
   );

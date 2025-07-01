@@ -42,7 +42,6 @@ export const useCreateCourse = () => {
     mutationFn: courseService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
-      toast.success("Course created successfully");
     },
     onError: () => {
       toast.error("Failed to create course");
@@ -61,7 +60,6 @@ export const useUpdateCourse = () => {
     onSuccess: (updatedCourse) => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       queryClient.invalidateQueries({ queryKey: ["course", updatedCourse.id] });
-      toast.success("Course updated successfully");
     },
     onError: () => {
       toast.error("Failed to update course");
@@ -75,7 +73,6 @@ export const useDeleteCourse = () => {
     mutationFn: courseService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
-      toast.success("Course deleted successfully");
     },
     onError: () => {
       toast.error("Failed to delete course");

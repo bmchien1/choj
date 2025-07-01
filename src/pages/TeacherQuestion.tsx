@@ -24,9 +24,17 @@ import {
   useUpdateQuestion,
   useDeleteQuestion,
 } from "@/hooks/useQuestionQueries";
-import { useGetAllTags, useAddTagToQuestion } from "@/hooks/useTagQueries";
+import { useGetTagsByCreator, useAddTagToQuestion } from "@/hooks/useTagQueries";
 import { Question, Choice, Tag, QuestionTable } from "@/apis/type";
 import { MinusCircleOutlined } from "@ant-design/icons";
+import AceEditor from "react-ace";
+import "ace-builds/src-noconflict/mode-java";
+import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/mode-c_cpp";
+import "ace-builds/src-noconflict/theme-dracula";
+import * as ace from "ace-builds";
+
+ace.config.set("basePath", "/node_modules/ace-builds/src-noconflict");
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -61,6 +69,8 @@ const ListTeacherQuestion = () => {
   const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(
     null
   );
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("c_cpp");
+  const [editSelectedLanguage, setEditSelectedLanguage] = useState<string>("c_cpp");
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
 
@@ -74,7 +84,7 @@ const ListTeacherQuestion = () => {
     type: filters.questionType,
     tags: filters.tags
   });
-  const { data: tags = { tags: [], pagination: { total: 0 } } } = useGetAllTags();
+  const { data: tags = { tags: [], pagination: { total: 0 } } } = useGetTagsByCreator(creatorId);
   const createQuestionMutation = useCreateQuestion();
   const updateQuestionMutation = useUpdateQuestion();
   const deleteQuestionMutation = useDeleteQuestion();
@@ -322,6 +332,7 @@ const ListTeacherQuestion = () => {
                   (choice: Choice) => choice.choice === record.correctAnswer
                 ) || 0
               );
+              setEditSelectedLanguage(record.language || "c_cpp");
               editForm.setFieldsValue({
                 questionName: record.questionName,
                 questionType: record.questionType,
@@ -663,7 +674,34 @@ const ListTeacherQuestion = () => {
                     },
                   ]}
                 >
-                  <Input.TextArea rows={4} />
+                  <div className="space-y-4">
+                    <Select
+                      value={selectedLanguage}
+                      style={{ width: 120 }}
+                      onChange={(value) => setSelectedLanguage(value)}
+                    >
+                      <Option value="c_cpp">C++</Option>
+                      <Option value="java">Java</Option>
+                      <Option value="python">Python</Option>
+                    </Select>
+                    <AceEditor
+                      mode={selectedLanguage}
+                      theme="dracula"
+                      name="templateCodeEditor"
+                      width="100%"
+                      height="300px"
+                      value={form.getFieldValue("templateCode") || ""}
+                      setOptions={{
+                        useWorker: false,
+                        showLineNumbers: true,
+                        tabSize: 2,
+                      }}
+                      className="rounded-md border border-gray-300"
+                      onChange={(value) => {
+                        form.setFieldValue("templateCode", value);
+                      }}
+                    />
+                  </div>
                 </Form.Item>
                 <Form.List name="testCases">
                   {(fields, { add, remove }) => (
@@ -909,7 +947,34 @@ const ListTeacherQuestion = () => {
                     },
                   ]}
                 >
-                  <Input.TextArea rows={4} />
+                  <div className="space-y-4">
+                    <Select
+                      value={editSelectedLanguage}
+                      style={{ width: 120 }}
+                      onChange={(value) => setEditSelectedLanguage(value)}
+                    >
+                      <Option value="c_cpp">C++</Option>
+                      <Option value="java">Java</Option>
+                      <Option value="python">Python</Option>
+                    </Select>
+                    <AceEditor
+                      mode={editSelectedLanguage}
+                      theme="dracula"
+                      name="editTemplateCodeEditor"
+                      width="100%"
+                      height="300px"
+                      value={editForm.getFieldValue("templateCode") || ""}
+                      setOptions={{
+                        useWorker: false,
+                        showLineNumbers: true,
+                        tabSize: 2,
+                      }}
+                      className="rounded-md border border-gray-300"
+                      onChange={(value) => {
+                        editForm.setFieldValue("templateCode", value);
+                      }}
+                    />
+                  </div>
                 </Form.Item>
                 <Form.List name="testCases">
                   {(fields, { add, remove }) => (

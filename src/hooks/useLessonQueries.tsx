@@ -26,7 +26,6 @@ export const useCreateLesson = () => {
     onSuccess: (_, { courseId }) => {
       queryClient.invalidateQueries({ queryKey: ["lessons", courseId] });
       queryClient.invalidateQueries({ queryKey: ["courseContent", courseId] });
-      toast.success("Lesson created successfully");
     },
     onError: () => {
       toast.error("Failed to create lesson");

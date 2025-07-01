@@ -93,43 +93,54 @@ const AllCourseList = () => {
     <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
       <Title level={2} style={{ marginBottom: 24, color: '#ff6a00' }}>All Courses</Title>
 
-      <Row gutter={[16, 16]}>
-        {listCoursesTableData.map((course) => (
-          <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
-            <Card
-              title={<span style={{ color: '#ff6a00' }}>{course.name}</span>}
-              extra={
-                <Button
-                  type="primary"
-                  style={{
-                    background: course.isJoined ? '#52c41a' : course.isWaiting ? '#1890ff' : '#ff6a00',
-                    borderColor: course.isJoined ? '#52c41a' : course.isWaiting ? '#1890ff' : '#ff6a00',
-                    color: '#fff',
-                    opacity: course.isJoined || course.isWaiting ? 0.8 : 1
-                  }}
-                  disabled={course.isJoined || course.isWaiting}
-                  onClick={() => handleRegister(course.id)}
-                  loading={isLoadingData.loading && isLoadingData.id === course.id}
-                >
-                  {course.isJoined ? "Registered" : course.isWaiting ? "Waiting" : "Register"}
-                </Button>
-              }
-            >
-              <Paragraph>{course.description}</Paragraph>
-              <Space direction="vertical">
-                <Text type="secondary">
-                  <CalendarOutlined className="mr-2" />
-                  Class: {course.class}
-                </Text>
-                <Text type="secondary">
-                  <TeamOutlined className="mr-2" />
-                  Subject: {course.subject}
-                </Text>
-              </Space>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+      {listCoursesTableData.length === 0 ? (
+        <div style={{ textAlign: 'center', marginTop: 64 }}>
+          <TeamOutlined style={{ fontSize: 48, color: '#ff6a00', marginBottom: 16 }} />
+          <div>
+            <Text type="secondary" style={{ fontSize: 18 }}>
+              There are currently no available courses.
+            </Text>
+          </div>
+        </div>
+      ) : (
+        <Row gutter={[16, 16]}>
+          {listCoursesTableData.map((course) => (
+            <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
+              <Card
+                title={<span style={{ color: '#ff6a00' }}>{course.name}</span>}
+                extra={
+                  <Button
+                    type="primary"
+                    style={{
+                      background: course.isJoined ? '#52c41a' : course.isWaiting ? '#1890ff' : '#ff6a00',
+                      borderColor: course.isJoined ? '#52c41a' : course.isWaiting ? '#1890ff' : '#ff6a00',
+                      color: '#fff',
+                      opacity: course.isJoined || course.isWaiting ? 0.8 : 1
+                    }}
+                    disabled={course.isJoined || course.isWaiting}
+                    onClick={() => handleRegister(course.id)}
+                    loading={isLoadingData.loading && isLoadingData.id === course.id}
+                  >
+                    {course.isJoined ? "Registered" : course.isWaiting ? "Waiting" : "Register"}
+                  </Button>
+                }
+              >
+                <Paragraph>{course.description}</Paragraph>
+                <Space direction="vertical">
+                  <Text type="secondary">
+                    <CalendarOutlined className="mr-2" />
+                    Class: {course.class}
+                  </Text>
+                  <Text type="secondary">
+                    <TeamOutlined className="mr-2" />
+                    Subject: {course.subject}
+                  </Text>
+                </Space>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
 
       <Modal
         title={<span style={{ color: '#ff6a00' }}>Course Information</span>}

@@ -1,5 +1,5 @@
 import axiosClient from "@/apis/config/axiosClient";
-import { LoginResponse, User, UserRole, LoginCredentials } from "@/apis/type";
+import { LoginResponse, User, UserRole, LoginCredentials, ChangePasswordRequest, ChangePasswordResponse } from "@/apis/type";
 
 const userService = {
   login: async (data: LoginCredentials): Promise<LoginResponse> => {
@@ -35,6 +35,10 @@ const userService = {
   },
   getMe: async (): Promise<User> => {
     const response = await axiosClient.get("/api/auth/me");
+    return response.data;
+  },
+  changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
+    const response = await axiosClient.post("/api/auth/change-password", data);
     return response.data;
   },
 };

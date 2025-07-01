@@ -40,7 +40,6 @@ export const useCreateAssignment = () => {
       queryClient.invalidateQueries({
         queryKey: ["courseContent", courseId],
       });
-      toast.success("Assignment created successfully");
     },
     onError: () => {
       toast.error("Failed to create assignment");
@@ -72,7 +71,6 @@ export const useCreateAssignmentFromMatrix = () => {
       queryClient.invalidateQueries({
         queryKey: ["courseContent", courseId],
       });
-      toast.success("Assignment created successfully");
     },
     onError: () => {
       toast.error("Failed to create assignment");

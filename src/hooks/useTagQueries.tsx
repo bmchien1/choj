@@ -40,7 +40,6 @@ export const useCreateTag = () => {
     mutationFn: tagService.createTag,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
-      toast.success("Tag created successfully");
     },
     onError: () => {
       toast.error("Failed to create tag");
@@ -55,7 +54,6 @@ export const useUpdateTag = () => {
     onSuccess: (updatedTag) => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
       queryClient.invalidateQueries({ queryKey: ["tag", updatedTag.id] });
-      toast.success("Tag updated successfully");
     },
     onError: () => {
       toast.error("Failed to update tag");
@@ -69,7 +67,6 @@ export const useDeleteTag = () => {
     mutationFn: tagService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
-      toast.success("Tag deleted successfully");
     },
     onError: () => {
       toast.error("Failed to delete tag");
@@ -84,7 +81,6 @@ export const useAddTagToQuestion = () => {
       tagService.addTagToQuestion(questionId, tagId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["questions"] });
-      toast.success("Tag added to question successfully");
     },
     onError: () => {
       toast.error("Failed to add tag to question");
