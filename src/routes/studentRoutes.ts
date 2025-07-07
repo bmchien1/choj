@@ -21,7 +21,7 @@ import StudentCourseDetail from '@/pages/StudentCourseDetail';
 import StudentViewLesson from '@/pages/StudentViewLesson';
 const studentRoutes = {
 	home: {
-		path: '/',
+		path: '/*',
 		component: Home,
 	},
 	// myContests: {

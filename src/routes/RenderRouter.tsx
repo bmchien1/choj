@@ -53,10 +53,10 @@ const ProtectedRoute: FC<{
 
   return element;
 };
-
 const routes = [
   {
     element: <PrivateLayout />,
+    // path: "/*",
     children: [
       ...Object.values(studentRoutes).map(({ path, component: Component }) => ({
         path,
@@ -72,6 +72,7 @@ const routes = [
   },
   {
     element: <PrivateLayout />,
+    // path: "/*",
     children: [
       ...Object.values(teacherRoutes).map(({ path, component: Component }) => ({
         path,
@@ -88,6 +89,7 @@ const routes = [
   },
   {
     element: <PrivateLayout />,
+    // path: "/*",
     children: [
       ...Object.values(adminRoutes).map(({ path, component: Component }) => ({
         path,
@@ -104,6 +106,7 @@ const routes = [
   },
   {
     element: <PublicLayout />,
+    // path: "*/",
     children: [
       ...Object.values(publicRoutes).map(({ path, component: Component }) => ({
         path,
