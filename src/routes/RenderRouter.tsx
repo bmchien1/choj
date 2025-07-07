@@ -7,7 +7,7 @@ import {
   Routes,
 } from "react-router-dom";
 import PublicLayout from "@/layouts/PublicLayout.tsx";
-import { NotFoundPage } from "@/pages";
+// import { NotFoundPage } from "@/pages";
 import publicRoutes from "@/routes/publicRoutes.ts";
 import PrivateLayout from "@/layouts/PrivateLayout.tsx";
 import studentRoutes from "@/routes/studentRoutes.ts";
