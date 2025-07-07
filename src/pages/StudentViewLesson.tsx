@@ -11,9 +11,12 @@ import { Controlled as CodeMirror } from "react-codemirror2";
 import { ArrowLeftOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import "codemirror/lib/codemirror.css";
 import "codemirror/mode/htmlmixed/htmlmixed";
-import { useMarkLessonCompleted, useIsLessonCompleted } from "@/hooks/useUserLesson";
+import {
+  useMarkLessonCompleted,
+  useIsLessonCompleted,
+} from "@/hooks/useUserLesson";
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 interface LessonContentSection {
   type: "theory" | "example" | "try_it" | "exercise";
@@ -33,7 +36,10 @@ const StudentViewLesson: React.FC = () => {
   const [codeStates, setCodeStates] = useState<{ [key: number]: string }>({});
   const user = JSON.parse(localStorage.getItem("userInfo") || "{}");
   const lessonIdNum = lesson?.id;
-  const { data: isCompleted, refetch } = useIsLessonCompleted(user.id, lessonIdNum ?? 0);
+  const { data: isCompleted, refetch } = useIsLessonCompleted(
+    user.id,
+    lessonIdNum ?? 0
+  );
   const markCompleted = useMarkLessonCompleted();
 
   if (isLoading) {
@@ -54,65 +60,74 @@ const StudentViewLesson: React.FC = () => {
       switch (section.type) {
         case "theory":
           return (
-            <Card 
-              key={index} 
-              title={<span style={{ color: '#ff6a00' }}>{section.title}</span>} 
+            <Card
+              key={index}
+              title={<span style={{ color: "#ff6a00" }}>{section.title}</span>}
               className="mb-4"
               bordered={false}
-              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+              style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
             >
-              <ReactMarkdown>{section.content?.replace(/\\n/g, '\n') || ""}</ReactMarkdown>
+              <ReactMarkdown>
+                {section.content?.replace(/\\n/g, "\n") || ""}
+              </ReactMarkdown>
             </Card>
           );
         case "example":
           return (
-            <Card 
-              key={index} 
-              title={<span style={{ color: '#ff6a00' }}>{section.title}</span>} 
+            <Card
+              key={index}
+              title={<span style={{ color: "#ff6a00" }}>{section.title}</span>}
               className="mb-4"
               bordered={false}
-              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+              style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
             >
-              <ReactMarkdown>{section.instructions?.replace(/\\n/g, '\n') || ""}</ReactMarkdown>
+              <ReactMarkdown>
+                {section.instructions?.replace(/\\n/g, "\n") || ""}
+              </ReactMarkdown>
               <SyntaxHighlighter language="html" style={dracula}>
-                {section.code?.replace(/\\n/g, '\n') || ""}
+                {section.code?.replace(/\\n/g, "\n") || ""}
               </SyntaxHighlighter>
             </Card>
           );
         case "try_it":
-          const code = codeStates[index] || section.code?.replace(/\\n/g, '\n') || "";
+          const code =
+            codeStates[index] || section.code?.replace(/\\n/g, "\n") || "";
           const htmlContent = `
             <!DOCTYPE html>
             <html>
               <head>
                 <style>
-                  ${code.includes("<style>") ? 
-                    code.split("<style>")[1].split("</style>")[0] : 
-                    code.includes("style") ? 
-                      code.split("style")[1].split("</style>")[0] : 
-                      code
+                  ${
+                    code.includes("<style>")
+                      ? code.split("<style>")[1].split("</style>")[0]
+                      : code.includes("style")
+                      ? code.split("style")[1].split("</style>")[0]
+                      : code
                   }
                 </style>
               </head>
               <body>
-                ${code.includes("<body>") ? 
-                  code.split("<body>")[1].split("</body>")[0] : 
-                  code.includes("div") ? 
-                    code.split("div")[1].split("</div>")[0] : 
-                    code
+                ${
+                  code.includes("<body>")
+                    ? code.split("<body>")[1].split("</body>")[0]
+                    : code.includes("div")
+                    ? code.split("div")[1].split("</div>")[0]
+                    : code
                 }
               </body>
             </html>
           `;
           return (
-            <Card 
-              key={index} 
-              title={<span style={{ color: '#ff6a00' }}>{section.title}</span>} 
+            <Card
+              key={index}
+              title={<span style={{ color: "#ff6a00" }}>{section.title}</span>}
               className="mb-4"
               bordered={false}
-              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+              style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
             >
-              <ReactMarkdown>{section.instructions?.replace(/\\n/g, '\n') || ""}</ReactMarkdown>
+              <ReactMarkdown>
+                {section.instructions?.replace(/\\n/g, "\n") || ""}
+              </ReactMarkdown>
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
                   <CodeMirror
@@ -145,12 +160,12 @@ const StudentViewLesson: React.FC = () => {
           );
         case "exercise":
           return (
-            <Card 
-              key={index} 
-              title={<span style={{ color: '#ff6a00' }}>{section.title}</span>} 
+            <Card
+              key={index}
+              title={<span style={{ color: "#ff6a00" }}>{section.title}</span>}
               className="mb-4"
               bordered={false}
-              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+              style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
             >
               <ReactMarkdown>{section.instructions || ""}</ReactMarkdown>
               <Input.TextArea
@@ -158,13 +173,13 @@ const StudentViewLesson: React.FC = () => {
                 placeholder="Write your solution here..."
                 className="mb-2"
                 disabled
-                style={{ borderColor: '#ff6a00' }}
+                style={{ borderColor: "#ff6a00" }}
               />
               <Button
                 type="primary"
                 onClick={() => toast.success("Submit solution coming soon!")}
                 disabled
-                style={{ background: '#ff6a00', borderColor: '#ff6a00' }}
+                style={{ background: "#ff6a00", borderColor: "#ff6a00" }}
               >
                 Submit
               </Button>
@@ -221,7 +236,10 @@ const StudentViewLesson: React.FC = () => {
 
     if (!transformedUrl) {
       return (
-        <Card bordered={false} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <Card
+          bordered={false}
+          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+        >
           <Paragraph>Invalid or unsupported video URL provided.</Paragraph>
         </Card>
       );
@@ -229,7 +247,10 @@ const StudentViewLesson: React.FC = () => {
 
     if (transformedUrl.endsWith(".mp4") || transformedUrl.endsWith(".webm")) {
       return (
-        <Card bordered={false} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <Card
+          bordered={false}
+          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+        >
           <video controls className="w-full rounded">
             <source
               src={transformedUrl}
@@ -244,7 +265,7 @@ const StudentViewLesson: React.FC = () => {
     }
 
     return (
-      <Card bordered={false} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <Card bordered={false} style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
         <div className="relative" style={{ paddingBottom: "56.25%" }}>
           <iframe
             src={transformedUrl}
@@ -259,29 +280,36 @@ const StudentViewLesson: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: 24, background: '#fff', minHeight: '100vh' }}>
+    <div style={{ padding: 24, background: "#fff", minHeight: "100vh" }}>
       <div style={{ marginBottom: 16 }}>
-        <Button 
-          icon={<ArrowLeftOutlined />} 
+        <Button
+          icon={<ArrowLeftOutlined />}
           onClick={() => navigate(`/my-courses/${lesson.course.id}`)}
-          style={{ borderColor: '#ff6a00', color: '#ff6a00' }}
+          style={{ borderColor: "#ff6a00", color: "#ff6a00" }}
         >
           Back to Course
         </Button>
       </div>
 
-      <Card bordered={false} style={{ marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        <Space direction="vertical" style={{ width: '100%' }}>
+      <Card
+        bordered={false}
+        style={{ marginBottom: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+      >
+        <Space direction="vertical" style={{ width: "100%" }}>
           <div className="flex justify-between items-center">
-            <Title level={2} style={{ margin: 0, color: '#ff6a00' }}>{lesson.title}</Title>
+            <Title level={2} style={{ margin: 0, color: "#ff6a00" }}>
+              {lesson.title}
+            </Title>
           </div>
-          <Paragraph style={{ fontSize: '16px' }}>{lesson.description}</Paragraph>
+          <Paragraph style={{ fontSize: "16px" }}>
+            {lesson.description}
+          </Paragraph>
           {lesson.file_url && (
-            <Button 
-              type="link" 
-              href={lesson.file_url} 
+            <Button
+              type="link"
+              href={lesson.file_url}
               target="_blank"
-              style={{ color: '#ff6a00' }}
+              style={{ color: "#ff6a00" }}
             >
               Download Lesson File
             </Button>
@@ -296,27 +324,44 @@ const StudentViewLesson: React.FC = () => {
         lesson.content.sections ? (
         renderContent(lesson.content.sections)
       ) : (
-        <Card bordered={false} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <Card
+          bordered={false}
+          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+        >
           <Paragraph>No content available for this lesson.</Paragraph>
         </Card>
       )}
 
-      <Card bordered={false} style={{ marginTop: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <Card
+        bordered={false}
+        style={{ marginTop: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+      >
         <Button
           type={isCompleted ? "primary" : "default"}
           icon={isCompleted ? <CheckCircleOutlined /> : undefined}
           onClick={() => {
             if (!lessonIdNum) return;
             markCompleted.mutate(
-              { userId: user.id, lessonId: lessonIdNum, completed: !isCompleted },
+              {
+                userId: user.id,
+                lessonId: lessonIdNum,
+                completed: !isCompleted,
+              },
               { onSuccess: () => refetch() }
             );
           }}
-          style={{ background: isCompleted ? '#ff6a00' : undefined, borderColor: '#ff6a00' }}
+          style={{
+            background: isCompleted ? "#ff6a00" : undefined,
+            borderColor: "#ff6a00",
+          }}
         >
           {isCompleted ? "Đã hoàn thành" : "Đánh dấu hoàn thành"}
         </Button>
-        {isCompleted && <Tag color="success" icon={<CheckCircleOutlined />}>Đã hoàn thành</Tag>}
+        {isCompleted && (
+          <Tag color="success" icon={<CheckCircleOutlined />}>
+            Đã hoàn thành
+          </Tag>
+        )}
       </Card>
     </div>
   );
