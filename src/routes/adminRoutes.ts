@@ -4,53 +4,53 @@ import ListAdminMatrix from "@/pages/AdminMatrix";
 const adminRoutes = {
 
 	listUser: {
-		path: 'admin/users',
+		path: '/admin/users',
 		component: UserListPage,
 	},
 	
 	listAdminCourse: {
-		path: 'admin/courses',
+		path: '/admin/courses',
 		component: AdminCourseListPage
 	},
 	courseDetail: {
-		path: 'admin/courses/details/:id',
+		path: '/admin/courses/details/:id',
 		component: AdminCourseDetail
 	},
 	
 	
 	listAdminQuestion: {
-		path: 'admin/questions',
+		path: '/admin/questions',
 		component: AdminQuestionListPage
 	},
 
 
 	listAdminTag: {
-		path: 'admin/tags',
+		path: '/admin/tags',
 		component: AdminTagListPage
 	},
 	joinCourse:{
-		path: 'admin/join-course-request',
+		path: '/admin/join-course-request',
 		component: AdminJoinCoursesPage
 	},
 
 	contest:{
-		path: 'admin/contest',
+		path: '/admin/contest',
 		component: AdminContestView
 	},
 	submission:{
-		path: 'admin/submission',
+		path: '/admin/submission',
 		component: AdminSubmission
 	},
 	submissionCourse:{
-		path: 'admin/submission/course/:id',
+		path: '/admin/submission/course/:id',
 		component: SubmissionCourse
 	},
 	submissionContest:{
-		path: 'admin/submission/contest/:id',
+		path: '/admin/submission/contest/:id',
 		component: SubmissionContest
 	},   
 	 listAdminMatrix: {
-		path: 'admin/matrices',
+		path: '/admin/matrices',
 		component: ListAdminMatrix
 	  },
 	// createContest: {

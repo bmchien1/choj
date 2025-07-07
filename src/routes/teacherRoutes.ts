@@ -4,46 +4,46 @@ import { ContestDetail } from '@/pages/ContestDetail';
   const teacherRoutes = {
   
     listTeacherCourse: {
-      path: 'teacher/my-courses',
+      path: '/teacher/my-courses',
       component: TeacherCourseListPage
     },
    
     listTeacherMatrix: {
-      path: 'teacher/my-matrices',
+      path: '/teacher/my-matrices',
       component: TeacherMatrixListPage
     },
   
     listTeacherQuestion: {
-      path: 'teacher/my-questions',
+      path: '/teacher/my-questions',
       component: TeacherQuestionListPage
     },
     
     listTeacherTag: {
-      path: 'teacher/my-tags',
+      path: '/teacher/my-tags',
       component: TeacherTagListPage
     },
     joinCourse:{
-      path: 'teacher/join-course-request',
+      path: '/teacher/join-course-request',
       component: TeacherJoinCoursesPage
     },
     courseDetail: {
-      path: 'teacher/courses/details/:id',
+      path: '/teacher/courses/details/:id',
       component: AdminCourseDetail
     },
     contest:{
-      path: 'teacher/contest',
+      path: '/teacher/contest',
       component: TeacherContestView
     },
     contestDetail: {
-      path: 'contests/:id',
+      path: '/contests/:id',
       component: ContestDetail
     },
     submissionCourse:{
-      path: 'teacher/submission/course/:courseId',
+      path: '/teacher/submission/course/:courseId',
       component: SubmissionCourse
     },
     submissionContest:{
-      path: 'teacher/submission/contest/:contestId',
+      path: '/teacher/submission/contest/:contestId',
       component: SubmissionContest
     }
   };

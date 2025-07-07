@@ -1,15 +1,13 @@
-import { Suspense } from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import RenderRouter from './RenderRouter.tsx';
+import { Suspense } from "react";
+import { RouterProvider } from "react-router-dom";
+import RenderRouter from "./RenderRouter.tsx";
 
 const AppRoutes = () => {
-	return (
-		<Suspense fallback="loading...">
-			<BrowserRouter>
-				<RenderRouter />
-			</BrowserRouter>
-		</Suspense>
-	);
+  return (
+    <Suspense fallback="loading...">
+      <RouterProvider router={RenderRouter}></RouterProvider>
+    </Suspense>
+  );
 };
 
 export default AppRoutes;
