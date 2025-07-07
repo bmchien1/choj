@@ -130,6 +130,6 @@ const routes = createRoutesFromElements([
   </Route>,
 ]);
 
-const RenderRouter = createBrowserRouter(routes);
+const RenderRouter = createBrowserRouter(routes, { basename: "/" });
 
 export default RenderRouter;
