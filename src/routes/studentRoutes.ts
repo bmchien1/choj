@@ -21,7 +21,7 @@ import StudentCourseDetail from '@/pages/StudentCourseDetail';
 import StudentViewLesson from '@/pages/StudentViewLesson';
 const studentRoutes = {
 	home: {
-		path: '/*',
+		path: '',
 		component: Home,
 	},
 	// myContests: {
@@ -33,40 +33,40 @@ const studentRoutes = {
 	// 	component: ContestListPage,
 	// },
 	myCourses: {
-		path: '/my-courses',
+		path: 'my-courses',
 		component: UserCourseListPage,
 	},
 	allCourses: {
-		path: '/courses',
+		path: 'courses',
 		component: AllCourseListPage,
 	},
 	
 	viewLesson:{
-		path: '/lesson/:lessonId',
+		path: 'lesson/:lessonId',
 		component: StudentViewLesson,
 	},
 	viewAssignment:{
-		path: '/assignment/:assignmentId',
+		path: 'assignment/:assignmentId',
 		component: StudentAssignment,
 	},
 	CourseDetail:{
-		path: '/my-courses/:id',
+		path: 'my-courses/:id',
 		component: StudentCourseDetail,
 	},
 	contest:{
-		path: '/contest',
+		path: 'contest',
 		component: StudentContestView
 	},
 	doContest:{
-		path: '/do-contest/:id',
+		path: 'do-contest/:id',
 		component: ContestPage
 	},
 	doContestPrivate:{
-		path: '/contests/access/:url',
+		path: 'contests/access/:url',
 		component: ContestAccess
 	},
 	changePassword: {
-		path: '/change-password',
+		path: 'change-password',
 		component: ChangePasswordPage,
 	},
 	// // problems: {

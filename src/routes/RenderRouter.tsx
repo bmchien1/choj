@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Navigate, useRoutes } from "react-router-dom";
 import PublicLayout from "@/layouts/PublicLayout.tsx";
-import { NotFoundPage } from "@/pages";
+// import { NotFoundPage } from "@/pages";
 import publicRoutes from "@/routes/publicRoutes.ts";
 import PrivateLayout from "@/layouts/PrivateLayout.tsx";
 import studentRoutes from "@/routes/studentRoutes.ts";
@@ -24,7 +24,7 @@ const ProtectedRoute: FC<{
 }) => {
   const isAuthenticated = !!localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
   let userRole: string | null = null;
-
+  console.log(path);
   try {
     const userInfo = localStorage.getItem("userInfo");
     if (userInfo) {
@@ -56,7 +56,7 @@ const ProtectedRoute: FC<{
 const routes = [
   {
     element: <PrivateLayout />,
-    // path: "/*",
+    path: "/*",
     children: [
       ...Object.values(studentRoutes).map(({ path, component: Component }) => ({
         path,
@@ -68,12 +68,6 @@ const routes = [
           />
         ),
       })),
-    ],
-  },
-  {
-    element: <PrivateLayout />,
-    // path: "/*",
-    children: [
       ...Object.values(teacherRoutes).map(({ path, component: Component }) => ({
         path,
         element: (
@@ -85,12 +79,6 @@ const routes = [
           />
         ),
       })),
-    ],
-  },
-  {
-    element: <PrivateLayout />,
-    // path: "/*",
-    children: [
       ...Object.values(adminRoutes).map(({ path, component: Component }) => ({
         path,
         element: (
@@ -106,7 +94,6 @@ const routes = [
   },
   {
     element: <PublicLayout />,
-    // path: "*/",
     children: [
       ...Object.values(publicRoutes).map(({ path, component: Component }) => ({
         path,
@@ -119,10 +106,6 @@ const routes = [
         ),
       })),
     ],
-  },
-  {
-    path: "*",
-    element: <NotFoundPage />,
   },
 ];
 
