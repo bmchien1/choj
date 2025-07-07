@@ -1,10 +1,5 @@
-import { Outlet } from "react-router-dom";
+// import { Outlet } from "react-router-dom";
 
-export default function PublicLayout() {
-  return (
-    <div className={"min-h-screen"}>
-      <Outlet />
-
-    </div>
-  );
+export default function PublicLayout(params: any) {
+  return <div className={"min-h-screen"}>{params.children}</div>;
 }

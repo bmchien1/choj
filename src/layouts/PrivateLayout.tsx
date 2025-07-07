@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Layout } from "antd";
 import "./index.css";
-import { Outlet, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import AppHeader from "@/components/Header/index";
 import useWindowSize from "@/hooks/useWindowSize.ts";
 import Sidebar from "@/components/SideBar";
@@ -9,7 +9,7 @@ import { ToastContainer } from "react-toastify";
 
 const { Header, Content } = Layout;
 
-const PrivateLayout = () => {
+const PrivateLayout = (params: any) => {
   const [collapsed, setCollapsed] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [activeKey, setActiveKey] = useState(["1"]);
@@ -90,7 +90,7 @@ const PrivateLayout = () => {
         </Header>
         <Content style={{ marginLeft: 22 }}>
           <div style={{ paddingTop: 16, paddingRight: 24, paddingLeft: 5 }}>
-            <Outlet />
+            {params.children}
           </div>
         </Content>
         <ToastContainer />

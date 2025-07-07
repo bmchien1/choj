@@ -60,74 +60,75 @@ const ProtectedRoute: FC<{
   return element;
 };
 const routes = createRoutesFromElements([
-  <Route element={<PrivateLayout />}>
-    <Route
-      path="/*"
-      element={
-        <Routes>
-          {...Object.values(studentRoutes).map(
-            ({ path, component: Component }) => (
-              <Route
-                path={path}
-                element={
+  <Route
+    path="/*"
+    element={
+      <Routes>
+        {...Object.values(studentRoutes).map(
+          ({ path, component: Component }) => (
+            <Route
+              path={path}
+              element={
+                <PrivateLayout>
                   <ProtectedRoute
                     element={<Component />}
                     requiredLogin={true}
                     path={path}
                   />
-                }
-              />
-            )
-          )}
-          {...Object.values(teacherRoutes).map(
-            ({ path, component: Component }) => (
-              <Route
-                path={path}
-                element={
+                </PrivateLayout>
+              }
+            />
+          )
+        )}
+        {...Object.values(teacherRoutes).map(
+          ({ path, component: Component }) => (
+            <Route
+              path={path}
+              element={
+                <PrivateLayout>
                   <ProtectedRoute
                     element={<Component />}
                     requiredLogin={true}
                     requiredTeacher={true}
                     path={path}
                   />
-                }
-              />
-            )
-          )}
-          {...Object.values(adminRoutes).map(
-            ({ path, component: Component }) => (
-              <Route
-                path={path}
-                element={
-                  <ProtectedRoute
-                    element={<Component />}
-                    requiredLogin={true}
-                    requiredAdmin={true}
-                    path={path}
-                  />
-                }
-              />
-            )
-          )}
-        </Routes>
-      }
-    />
-    ,
-  </Route>,
-  <Route element={<PublicLayout />}>
-    {Object.values(publicRoutes).map(({ path, component: Component }) => (
-      <Route
-        path={path}
-        element={
+                </PrivateLayout>
+              }
+            />
+          )
+        )}
+        {...Object.values(adminRoutes).map(({ path, component: Component }) => (
+          <Route
+            path={path}
+            element={
+              <PrivateLayout>
+                <ProtectedRoute
+                  element={<Component />}
+                  requiredLogin={true}
+                  requiredAdmin={true}
+                  path={path}
+                />
+              </PrivateLayout>
+            }
+          />
+        ))}
+      </Routes>
+    }
+  />,
+  Object.values(publicRoutes).map(({ path, component: Component }) => (
+    <Route
+      path={path}
+      element={
+        <PublicLayout>
           <ProtectedRoute
             element={<Component />}
             requiredLogin={false}
             path={path}
           />
-        }
-      />
-    ))}
-  </Route>,
+        </PublicLayout>
+      }
+    />
+  )),
 ]);
 
 const RenderRouter = createBrowserRouter(routes, { basename: "/" });
