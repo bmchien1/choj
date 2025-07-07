@@ -260,7 +260,7 @@ export const ContestPage: React.FC = () => {
 
                 if (question.questionType === 'coding') {
                     answer = editorCodes[questionId] || '';
-                    language = selectedLanguages[questionId] || question.language || 'python';
+                    language = selectedLanguages[questionId] || question.language || 'cpp';
                 } else {
                     answer = answers[question.id || 0] || '';
                 }
@@ -288,7 +288,7 @@ export const ContestPage: React.FC = () => {
                     contestId: parseInt(contestId?.toString() || "0"),
                     testId: parseInt(contestId?.toString() || "0"),
                     problemId: submissionAnswers[0].questionId,
-                    languageId: languageMap[submissionAnswers[0].language || 'python'] || 1,
+                    languageId: languageMap[submissionAnswers[0].language || 'cpp'] || 1,
                     sourceCode: submissionAnswers[0].sourceCode,
                     answers: submissionAnswers
                 },
@@ -455,9 +455,9 @@ export const ContestPage: React.FC = () => {
                                         </div>
                                         <AceEditor
                                             mode={
-                                                selectedLanguages[question.id?.toString() || ''] ||
-                                                question.language ||
-                                                'cpp'
+                                                (selectedLanguages[question.id?.toString() || ''] || question.language || 'cpp') === 'cpp'
+                                                    ? 'c_cpp'
+                                                    : (selectedLanguages[question.id?.toString() || ''] || question.language || 'cpp')
                                             }
                                             theme="dracula"
                                             name={`editor-${question.id}`}

@@ -183,25 +183,32 @@ const StudentAssignment: React.FC = () => {
       toast.error("No active attempt found");
       return;
     }
+    if (!assignment) {
+      toast.error("Assignment not found");
+      return;
+    }
 
     try {
       // Submit the attempt first
       await assignmentService.submitAttempt(attempt.id);
       
-      // Collect all answers
-      const answers = Object.keys(values)
-        .map((key) => {
-          const questionId = key.replace("question-", "");
-          const sourceCode = editorCodes[questionId] || values[key];
-          return {
-            questionId: parseInt(questionId),
-            sourceCode,
-            language: selectedLanguages[questionId] || "python",
-          };
-        })
-        .filter((answer: { questionId: number; sourceCode: string; language: string }) => 
-          answer.sourceCode && answer.sourceCode.trim() !== ''
-        );
+      // Collect all answers giống contest
+      const answers = (assignment.questions || []).map((question) => {
+        const questionId = question.id?.toString() || '';
+        let sourceCode = '';
+        let language = '';
+        if (question.questionType === 'coding') {
+          sourceCode = editorCodes[questionId] || values[`question-${questionId}`] || '';
+          language = selectedLanguages[questionId] || question.language || 'cpp';
+        } else {
+          sourceCode = values[`question-${questionId}`] || '';
+        }
+        return {
+          questionId: question.id || 0,
+          sourceCode,
+          language,
+        };
+      }).filter((answer) => answer.sourceCode && answer.sourceCode.trim() !== '');
 
       if (answers.length === 0) {
         toast.error("Please provide at least one answer before submitting");
@@ -443,7 +450,11 @@ const StudentAssignment: React.FC = () => {
                           </Select>
 
                           <AceEditor
-                            mode={selectedLanguages[question.id!.toString()] || question.language || "python"}
+                            mode={
+                              (selectedLanguages[question.id!.toString()] || question.language || "cpp") === "cpp"
+                                ? "c_cpp"
+                                : (selectedLanguages[question.id!.toString()] || question.language || "cpp")
+                            }
                             theme="dracula"
                             name={`editor-${question.id}`}
                             width="100%"

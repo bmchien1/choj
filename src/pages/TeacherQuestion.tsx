@@ -723,7 +723,7 @@ const ListTeacherQuestion = () => {
                               { required: true, message: "Input is required" },
                             ]}
                           >
-                            <Input placeholder="Input" />
+                            <Input.TextArea rows={3} placeholder="Input" />
                           </Form.Item>
                           <Form.Item
                             {...restField}
@@ -733,7 +733,7 @@ const ListTeacherQuestion = () => {
                               { required: true, message: "Output is required" },
                             ]}
                           >
-                            <Input placeholder="Output" />
+                            <Input.TextArea rows={3} placeholder="Output" />
                           </Form.Item>
                           <MinusCircleOutlined onClick={() => remove(name)} />
                         </div>
@@ -996,7 +996,7 @@ const ListTeacherQuestion = () => {
                               { required: true, message: "Input is required" },
                             ]}
                           >
-                            <Input placeholder="Input" />
+                            <Input.TextArea rows={3} placeholder="Input" />
                           </Form.Item>
                           <Form.Item
                             {...restField}
@@ -1006,7 +1006,7 @@ const ListTeacherQuestion = () => {
                               { required: true, message: "Output is required" },
                             ]}
                           >
-                            <Input placeholder="Output" />
+                            <Input.TextArea rows={3} placeholder="Output" />
                           </Form.Item>
                           <MinusCircleOutlined onClick={() => remove(name)} />
                         </div>

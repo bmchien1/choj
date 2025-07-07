@@ -77,25 +77,6 @@ const StudentViewLesson: React.FC = () => {
               <SyntaxHighlighter language="html" style={dracula}>
                 {section.code?.replace(/\\n/g, '\n') || ""}
               </SyntaxHighlighter>
-              <div className="mt-4">
-                <Text strong>Live Preview:</Text>
-                <div className="mt-2">
-                  <iframe
-                    srcDoc={`
-                      <!DOCTYPE html>
-                      <html>
-                        <head>
-                          <style>${section.code?.replace(/\\n/g, '\n')?.includes("<style>") ? "" : section.code?.replace(/\\n/g, '\n')}</style>
-                        </head>
-                        <body>${section.code?.replace(/\\n/g, '\n')?.includes("<body>") ? "" : section.code?.replace(/\\n/g, '\n')}</body>
-                      </html>
-                    `}
-                    title="preview"
-                    className="w-full h-64 border rounded"
-                    sandbox="allow-scripts allow-same-origin"
-                  />
-                </div>
-              </div>
             </Card>
           );
         case "try_it":
