@@ -7,7 +7,7 @@ import {
   Routes,
 } from "react-router-dom";
 import PublicLayout from "@/layouts/PublicLayout.tsx";
-// import { NotFoundPage } from "@/pages";
+import { NotFoundPage } from "@/pages";
 import publicRoutes from "@/routes/publicRoutes.ts";
 import PrivateLayout from "@/layouts/PrivateLayout.tsx";
 import studentRoutes from "@/routes/studentRoutes.ts";
@@ -60,13 +60,13 @@ const ProtectedRoute: FC<{
   return element;
 };
 const routes = createRoutesFromElements([
-  <Route
-    path="/*"
-    element={
-      <Routes>
-        {...Object.values(studentRoutes).map(
-          ({ path, component: Component }) => (
-            <Route path={path} element={<PrivateLayout />}>
+  <Route element={<PrivateLayout />}>
+    <Route
+      path="/*"
+      element={
+        <Routes>
+          {...Object.values(studentRoutes).map(
+            ({ path, component: Component }) => (
               <Route
                 path={path}
                 element={
@@ -77,12 +77,10 @@ const routes = createRoutesFromElements([
                   />
                 }
               />
-            </Route>
-          )
-        )}
-        {...Object.values(teacherRoutes).map(
-          ({ path, component: Component }) => (
-            <Route path={path} element={<PrivateLayout />}>
+            )
+          )}
+          {...Object.values(teacherRoutes).map(
+            ({ path, component: Component }) => (
               <Route
                 path={path}
                 element={
@@ -94,27 +92,28 @@ const routes = createRoutesFromElements([
                   />
                 }
               />
-            </Route>
-          )
-        )}
-        {...Object.values(adminRoutes).map(({ path, component: Component }) => (
-          <Route path={path} element={<PrivateLayout />}>
-            <Route
-              path={path}
-              element={
-                <ProtectedRoute
-                  element={<Component />}
-                  requiredLogin={true}
-                  requiredAdmin={true}
-                  path={path}
-                />
-              }
-            />
-          </Route>
-        ))}
-      </Routes>
-    }
-  />,
+            )
+          )}
+          {...Object.values(adminRoutes).map(
+            ({ path, component: Component }) => (
+              <Route
+                path={path}
+                element={
+                  <ProtectedRoute
+                    element={<Component />}
+                    requiredLogin={true}
+                    requiredAdmin={true}
+                    path={path}
+                  />
+                }
+              />
+            )
+          )}
+        </Routes>
+      }
+    />
+    ,
+  </Route>,
   <Route element={<PublicLayout />}>
     {Object.values(publicRoutes).map(({ path, component: Component }) => (
       <Route
